@@ -42,3 +42,14 @@ Crie o arquivo `public/dashboard.html` mantendo identidade visual sombria, minim
 - Importação da biblioteca Chart.js via CDN (`https://cdn.jsdelivr.net/npm/chart.js`).
 - Configuração de gráfico de rosca para **Temas Filosóficos Mais Explorados** com dados simulados.
 - Configuração de gráfico de linha para **Evolução do Autoconhecimento** com dados simulados e estilização compatível com o tema.
+
+### Prompt
+Crie o arquivo `public/diario.html` mantendo a identidade visual sombria, minimalista e com tipografia serifada, com o mesmo menu lateral esquerdo do dashboard. Na área principal, dividir a tela em duas partes: uma para interação com o agente de IA (caixa de texto grande + botão **"Enviar Reflexão"**) e outra com histórico de reflexões passadas contendo datas e títulos simulados.
+
+### Ação realizada
+- Criação do arquivo `public/diario.html` com layout escuro/minimalista e tipografia serifada, consistente com as demais telas.
+- Reutilização do menu lateral esquerdo com links para `diario.html`, `dashboard.html` e `login.html` (Sair).
+- Estrutura principal dividida em duas colunas:
+  - Área de interação com o agente de IA com `textarea` grande e botão **"Enviar Reflexão"**.
+  - Coluna lateral com histórico simulado de reflexões, exibindo títulos e datas.
+- Inclusão de responsividade para adaptar o layout em telas menores.

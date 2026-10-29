@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filosofia | Diário</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      font-family: "Times New Roman", Georgia, serif;
+      background: radial-gradient(circle at top, #1a1a1a 0%, #0b0b0d 55%, #050506 100%);
+      color: #e7e3d5;
+    }
+
+    .menu-lateral {
+      border-right: 1px solid #2f2f33;
+      background: rgba(10, 10, 12, 0.9);
+      padding: 28px 20px;
+    }
+
+    .menu-lateral h1 {
+      font-size: 1.3rem;
+      margin-bottom: 28px;
+      color: #f6f1df;
+    }
+
+    .menu-lateral nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-lateral a {
+      text-decoration: none;
+      color: #d1c9b3;
+      border: 1px solid #2f2f33;
+      border-radius: 6px;
+      padding: 10px 12px;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .menu-lateral a:hover,
+    .menu-lateral a.ativo {
+      background: #16161a;
+      border-color: #d8b46a;
+      color: #f6f1df;
+    }
+
+    .conteudo {
+      padding: 30px;
+    }
+
+    .titulo {
+      margin-bottom: 6px;
+      color: #f6f1df;
+      font-size: 2rem;
+    }
+
+    .subtitulo {
+      color: #b9b2a0;
+      margin-bottom: 24px;
+    }
+
+    .layout-diario {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(16, 16, 18, 0.9);
+      border: 1px solid #2f2f33;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      color: #efe9d6;
+      margin-bottom: 14px;
+    }
+
+    .area-reflexao textarea {
+      width: 100%;
+      min-height: 320px;
+      resize: vertical;
+      border: 1px solid #3a3a40;
+      border-radius: 8px;
+      padding: 14px;
+      background: #101014;
+      color: #ece7d7;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 14px;
+    }
+
+    .area-reflexao textarea:focus {
+      border-color: #d8b46a;
+    }
+
+    .botao-enviar {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      background: #d8b46a;
+      color: #151515;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 10px 24px rgba(216, 180, 106, 0.2);
+    }
+
+    .botao-enviar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(216, 180, 106, 0.3);
+    }
+
+    .historico-lista {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .historico-item {
+      border: 1px solid #2f2f33;
+      border-radius: 8px;
+      padding: 12px;
+      background: #121217;
+    }
+
+    .historico-item strong {
+      display: block;
+      color: #f0e9d5;
+      margin-bottom: 4px;
+    }
+
+    .historico-item span {
+      color: #b9b2a0;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 980px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .menu-lateral {
+        border-right: none;
+        border-bottom: 1px solid #2f2f33;
+      }
+
+      .layout-diario {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="menu-lateral">
+    <h1>Painel Filosófico</h1>
+    <nav>
+      <a class="ativo" href="diario.html">Diário</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="login.html">Sair</a>
+    </nav>
+  </aside>
+
+  <main class="conteudo">
+    <h2 class="titulo">Diário Filosófico</h2>
+    <p class="subtitulo">Registre suas reflexões e acompanhe sua jornada de pensamento.</p>
+
+    <section class="layout-diario">
+      <article class="card area-reflexao">
+        <h2>Interação com o Agente de IA</h2>
+        <textarea placeholder="Escreva sua reflexão, dúvida ou insight filosófico..."></textarea>
+        <button class="botao-enviar">Enviar Reflexão</button>
+      </article>
+
+      <aside class="card">
+        <h2>Histórico de Reflexões</h2>
+        <ul class="historico-lista">
+          <li class="historico-item">
+            <strong>O peso das escolhas</strong>
+            <span>27/10/2026</span>
+          </li>
+          <li class="historico-item">
+            <strong>Viver com virtude</strong>
+            <span>24/10/2026</span>
+          </li>
+          <li class="historico-item">
+            <strong>Quem sou eu além dos papéis?</strong>
+            <span>20/10/2026</span>
+          </li>
+          <li class="historico-item">
+            <strong>Liberdade e responsabilidade</strong>
+            <span>16/10/2026</span>
+          </li>
+        </ul>
+      </aside>
+    </section>
+  </main>
+</body>
+
+</html>
