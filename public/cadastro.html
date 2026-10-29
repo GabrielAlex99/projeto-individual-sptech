@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Filosofia | Cadastro</title>
-  <script src="./js/sessao.js"></script>
   <style>
     * {
       margin: 0;
@@ -164,7 +163,6 @@
         cardErro.style.display = "block";
         mensagem_erro.innerHTML = "Preencha todos os campos para continuar.";
         setTimeout(sumirMensagem, 5000);
-        finalizarAguardar();
         return false;
       }
 
@@ -172,7 +170,6 @@
         cardErro.style.display = "block";
         mensagem_erro.innerHTML = "A confirmação de senha não corresponde.";
         setTimeout(sumirMensagem, 5000);
-        finalizarAguardar();
         return false;
       }
 
@@ -196,9 +193,6 @@
             setTimeout(function () {
               window.location = "login.html";
             }, 2000);
-
-            limparFormulario();
-            finalizarAguardar();
           } else {
             throw "Houve um erro ao tentar realizar o cadastro.";
           }
@@ -207,7 +201,6 @@
           console.log(`#ERRO: ${erro}`);
           cardErro.style.display = "block";
           mensagem_erro.innerHTML = "Não foi possível concluir o cadastro.";
-          finalizarAguardar();
         });
 
       return false;

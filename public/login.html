@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Filosofia | Login</title>
-    <script src="./js/sessao.js"></script>
     <style>
         * {
             margin: 0;
@@ -144,15 +143,12 @@
     <script>
         // Envia os dados de login para autenticação na rota de usuários
         function entrar() {
-            aguardar();
-
             const emailVar = email_input.value;
             const senhaVar = senha_input.value;
 
             if (emailVar === "" || senhaVar === "") {
                 cardErro.style.display = "block";
                 mensagem_erro.innerHTML = "Preencha email e senha para continuar.";
-                finalizarAguardar();
                 return false;
             } else {
                 setTimeout(sumirMensagem, 5000);
@@ -184,12 +180,10 @@
 
                     resposta.text().then(texto => {
                         console.error(texto);
-                        finalizarAguardar(texto);
                     });
                 }
             }).catch(function (erro) {
                 console.log(`#ERRO: ${erro}`);
-                finalizarAguardar();
             });
 
             return false;

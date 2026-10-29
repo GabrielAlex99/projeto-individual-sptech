@@ -53,3 +53,14 @@ Crie o arquivo `public/diario.html` mantendo a identidade visual sombria, minima
   - Área de interação com o agente de IA com `textarea` grande e botão **"Enviar Reflexão"**.
   - Coluna lateral com histórico simulado de reflexões, exibindo títulos e datas.
 - Inclusão de responsividade para adaptar o layout em telas menores.
+
+### Prompt
+Refatore os arquivos `public/login.html` e `public/cadastro.html` para remover referências que geram erro no console: excluir a importação de `./js/sessao.js` no `<head>` e apagar chamadas de `aguardar()`, `finalizarAguardar()` e `limparFormulario()`, mantendo visual e lógica principal de `fetch`.
+
+### Ação realizada
+- Remoção da tag `<script src="./js/sessao.js"></script>` dos arquivos `public/login.html` e `public/cadastro.html`.
+- Limpeza das chamadas obsoletas:
+  - `aguardar()` removida da função `entrar()`.
+  - `finalizarAguardar()` removida dos blocos de validação/erro em `login.html` e `cadastro.html`.
+  - `limparFormulario()` removida do fluxo de sucesso em `cadastro.html`.
+- Preservação do layout visual e da lógica de requisição `fetch` para autenticação e cadastro.
