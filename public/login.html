@@ -1,158 +1,204 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>AquaTech | Login</title>
-
+    <title>Filosofia | Login</title>
     <script src="./js/sessao.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <link rel="stylesheet" href="./css/estilo.css">
-    <link rel="icon" href="./assets/icon/favicon2.ico">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
+        body {
+            min-height: 100vh;
+            font-family: "Times New Roman", Georgia, serif;
+            background: radial-gradient(circle at top, #1a1a1a 0%, #0b0b0d 55%, #050506 100%);
+            color: #e7e3d5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(16, 16, 18, 0.9);
+            border: 1px solid #2f2f33;
+            border-radius: 10px;
+            padding: 32px;
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            color: #f6f1df;
+            font-size: 2rem;
+        }
+
+        .citacao {
+            margin-bottom: 24px;
+            color: #b9b2a0;
+            font-style: italic;
+        }
+
+        .card_erro {
+            display: none;
+            margin-bottom: 16px;
+            border: 1px solid #7a2b2b;
+            background: rgba(122, 43, 43, 0.15);
+            color: #ffb6b6;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .campo {
+            margin-bottom: 14px;
+        }
+
+        .campo span {
+            display: block;
+            margin-bottom: 6px;
+            color: #d1c9b3;
+        }
+
+        .campo input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #3a3a40;
+            border-radius: 6px;
+            background: #101014;
+            color: #ece7d7;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .campo input:focus {
+            border-color: #d8b46a;
+        }
+
+        .botao {
+            width: 100%;
+            border: none;
+            margin-top: 8px;
+            padding: 13px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            background: #d8b46a;
+            color: #151515;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 10px 24px rgba(216, 180, 106, 0.2);
+        }
+
+        .botao:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(216, 180, 106, 0.3);
+        }
+
+        .loading-div {
+            display: none;
+            margin-top: 14px;
+            text-align: center;
+        }
+
+        .loading-div img {
+            width: 38px;
+        }
+    </style>
 </head>
 
 <body>
+    <main class="card">
+        <h1>Retorno</h1>
+        <p class="citacao">"Saber que nada sabemos é o princípio da sabedoria."</p>
 
-    <!--Header-->
-
-    <div class="header">
-        <div class="container">
-            <h1 class="titulo">AquaTech</h1>
-            <ul class="navbar">
-                <li>
-                    <a href="index.html">Inicial</a>
-                </li>
-                <li>
-                    <a href="simulador.html">Simulador</a>
-                </li>
-                <li>|</li>
-                <li class="agora">
-                    <a href="#">Login</a>
-                </li>
-                <li>
-                    <a href="cadastro.html">Cadastro</a>
-                </li>
-            </ul>
+        <div class="card_erro" id="cardErro">
+            <span id="mensagem_erro"></span>
         </div>
-    </div>
 
-
-    <div class="login">
-        <div class="alerta_erro">
-            <div class="card_erro" id="cardErro">
-                <span id="mensagem_erro"></span>
-            </div>
+        <div class="campo">
+            <span>Email:</span>
+            <input id="email_input" type="text" placeholder="seuemail@provedor.com">
         </div>
-        <div class="container">
-            <div class="card card-login">
-                <h2>Olá de volta!</h2>
-                <div class="formulario">
-                    <div class="campo">
-                        <span>E-mail:</span>
-                        <input id="email_input" type="text" placeholder="Login">
-                    </div>
-                    <div class="campo">
-                        <span>Senha:</span>
-                        <input id="senha_input" type="password" placeholder="******">
-                    </div>
-                    <button class="botao" onclick="entrar()">Entrar</button>
-                </div>
-
-                <div id="div_aguardar" class="loading-div">
-                    <img src="./assets/circle-loading.gif" id="loading-gif">
-                </div>
-
-                <div id="div_erros_login"></div>
-            </div>
+        <div class="campo">
+            <span>Senha:</span>
+            <input id="senha_input" type="password" placeholder="******">
         </div>
-    </div>
 
-    <!--footer inicio-->
-    <div class="footer">
-        <div class="container">
-            <h4>Feito com amor por aluno &hearts; SPTech &copy; 2023-2026</h4>
+        <button class="botao" onclick="entrar()">Retomar Reflexão</button>
+
+        <div id="div_aguardar" class="loading-div">
+            <img src="./assets/circle-loading.gif" id="loading-gif" alt="Carregando">
         </div>
-    </div>
-    <!--footer fim-->
 
+        <div id="div_erros_login"></div>
+    </main>
+
+    <script>
+        // Envia os dados de login para autenticação na rota de usuários
+        function entrar() {
+            aguardar();
+
+            const emailVar = email_input.value;
+            const senhaVar = senha_input.value;
+
+            if (emailVar === "" || senhaVar === "") {
+                cardErro.style.display = "block";
+                mensagem_erro.innerHTML = "Preencha email e senha para continuar.";
+                finalizarAguardar();
+                return false;
+            } else {
+                setTimeout(sumirMensagem, 5000);
+            }
+
+            fetch("/usuarios/autenticar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    emailServer: emailVar,
+                    senhaServer: senhaVar
+                })
+            }).then(function (resposta) {
+                if (resposta.ok) {
+                    resposta.json().then(json => {
+                        sessionStorage.EMAIL_USUARIO = json.email;
+                        sessionStorage.NOME_USUARIO = json.nome;
+                        sessionStorage.ID_USUARIO = json.id;
+                        sessionStorage.AQUARIOS = JSON.stringify(json.aquarios);
+
+                        setTimeout(function () {
+                            window.location = "./diario.html";
+                        }, 1000);
+                    });
+                } else {
+                    console.log("Houve um erro ao tentar realizar o login!");
+
+                    resposta.text().then(texto => {
+                        console.error(texto);
+                        finalizarAguardar(texto);
+                    });
+                }
+            }).catch(function (erro) {
+                console.log(`#ERRO: ${erro}`);
+                finalizarAguardar();
+            });
+
+            return false;
+        }
+
+        function sumirMensagem() {
+            cardErro.style.display = "none";
+        }
+    </script>
 </body>
 
 </html>
-
-<script>
-
-
-    function entrar() {
-        aguardar();
-
-        var emailVar = email_input.value;
-        var senhaVar = senha_input.value;
-
-        if (emailVar == "" || senhaVar == "") {
-            cardErro.style.display = "block"
-            mensagem_erro.innerHTML = "(Mensagem de erro para todos os campos em branco)";
-            finalizarAguardar();
-            return false;
-        }
-        else {
-            setInterval(sumirMensagem, 5000)
-        }
-
-        console.log("FORM LOGIN: ", emailVar);
-        console.log("FORM SENHA: ", senhaVar);
-
-        fetch("/usuarios/autenticar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                emailServer: emailVar,
-                senhaServer: senhaVar
-            })
-        }).then(function (resposta) {
-            console.log("ESTOU NO THEN DO entrar()!")
-
-            if (resposta.ok) {
-                console.log(resposta);
-
-                resposta.json().then(json => {
-                    console.log(json);
-                    console.log(JSON.stringify(json));
-                    sessionStorage.EMAIL_USUARIO = json.email;
-                    sessionStorage.NOME_USUARIO = json.nome;
-                    sessionStorage.ID_USUARIO = json.id;
-                    sessionStorage.AQUARIOS = JSON.stringify(json.aquarios)
-
-                    setTimeout(function () {
-                        window.location = "./dashboard/cards.html";
-                    }, 1000); // apenas para exibir o loading
-
-                });
-
-            } else {
-
-                console.log("Houve um erro ao tentar realizar o login!");
-
-                resposta.text().then(texto => {
-                    console.error(texto);
-                    finalizarAguardar(texto);
-                });
-            }
-
-        }).catch(function (erro) {
-            console.log(erro);
-        })
-
-        return false;
-    }
-
-    function sumirMensagem() {
-        cardErro.style.display = "none"
-    }
-
-</script>
