@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filosofia | Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      font-family: "Times New Roman", Georgia, serif;
+      background: radial-gradient(circle at top, #1a1a1a 0%, #0b0b0d 55%, #050506 100%);
+      color: #e7e3d5;
+    }
+
+    .menu-lateral {
+      border-right: 1px solid #2f2f33;
+      background: rgba(10, 10, 12, 0.9);
+      padding: 28px 20px;
+    }
+
+    .menu-lateral h1 {
+      font-size: 1.3rem;
+      margin-bottom: 28px;
+      color: #f6f1df;
+    }
+
+    .menu-lateral nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-lateral a {
+      text-decoration: none;
+      color: #d1c9b3;
+      border: 1px solid #2f2f33;
+      border-radius: 6px;
+      padding: 10px 12px;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .menu-lateral a:hover,
+    .menu-lateral a.ativo {
+      background: #16161a;
+      border-color: #d8b46a;
+      color: #f6f1df;
+    }
+
+    .conteudo {
+      padding: 30px;
+    }
+
+    .titulo {
+      margin-bottom: 6px;
+      color: #f6f1df;
+      font-size: 2rem;
+    }
+
+    .subtitulo {
+      color: #b9b2a0;
+      margin-bottom: 24px;
+    }
+
+    .painel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(16, 16, 18, 0.9);
+      border: 1px solid #2f2f33;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      color: #efe9d6;
+      margin-bottom: 14px;
+    }
+
+    .grafico-container {
+      flex: 1;
+      position: relative;
+      min-height: 250px;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .menu-lateral {
+        border-right: none;
+        border-bottom: 1px solid #2f2f33;
+      }
+
+      .painel {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="menu-lateral">
+    <h1>Painel Filosófico</h1>
+    <nav>
+      <a href="diario.html">Diário</a>
+      <a class="ativo" href="dashboard.html">Dashboard</a>
+      <a href="login.html">Sair</a>
+    </nav>
+  </aside>
+
+  <main class="conteudo">
+    <h2 class="titulo">Dashboard</h2>
+    <p class="subtitulo">Esqueleto inicial de métricas filosóficas com dados simulados.</p>
+
+    <section class="painel">
+      <article class="card">
+        <h2>Temas Filosóficos Mais Explorados</h2>
+        <div class="grafico-container">
+          <canvas id="graficoTemas"></canvas>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Evolução do Autoconhecimento</h2>
+        <div class="grafico-container">
+          <canvas id="graficoEvolucao"></canvas>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const contextoTemas = document.getElementById("graficoTemas");
+    const contextoEvolucao = document.getElementById("graficoEvolucao");
+
+    new Chart(contextoTemas, {
+      type: "doughnut",
+      data: {
+        labels: ["Ética", "Existencialismo", "Estoicismo", "Metafísica", "Lógica"],
+        datasets: [{
+          label: "Temas explorados",
+          data: [28, 22, 19, 17, 14],
+          backgroundColor: ["#d8b46a", "#9e8a58", "#6f6550", "#4f4a41", "#2f2f33"],
+          borderColor: "#111114",
+          borderWidth: 2
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: "#e7e3d5"
+            }
+          }
+        }
+      }
+    });
+
+    new Chart(contextoEvolucao, {
+      type: "line",
+      data: {
+        labels: ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5", "Semana 6"],
+        datasets: [{
+          label: "Índice de autoconhecimento",
+          data: [42, 49, 53, 61, 68, 74],
+          fill: true,
+          tension: 0.3,
+          borderColor: "#d8b46a",
+          backgroundColor: "rgba(216, 180, 106, 0.16)",
+          pointBackgroundColor: "#e7d7b0",
+          pointBorderColor: "#d8b46a",
+          pointRadius: 4
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: {
+              color: "#d1c9b3"
+            },
+            grid: {
+              color: "rgba(255, 255, 255, 0.08)"
+            }
+          },
+          y: {
+            ticks: {
+              color: "#d1c9b3"
+            },
+            grid: {
+              color: "rgba(255, 255, 255, 0.08)"
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: "#e7e3d5"
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

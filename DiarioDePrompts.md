@@ -31,3 +31,14 @@ Refatore o arquivo `public/login.html` para a identidade visual sombria e minima
 - Texto do botão principal alterado para **"Retomar Reflexão"**.
 - Inclusão de citação filosófica curta em itálico acima do formulário para enriquecer a experiência visual.
 - JavaScript preservado na lógica de autenticação com `fetch` para `/usuarios/autenticar`, com ajuste do redirecionamento de sucesso para `./diario.html`.
+
+### Prompt
+Crie o arquivo `public/dashboard.html` mantendo identidade visual sombria, minimalista e tipografia serifada, com menu lateral esquerdo contendo links para Diário, Dashboard e Sair. Na área principal, montar o esqueleto de um painel com dois gráficos em Chart.js (CDN): rosca para **Temas Filosóficos Mais Explorados** e linha para **Evolução do Autoconhecimento**, com dados estáticos simulados.
+
+### Ação realizada
+- Criação do arquivo `public/dashboard.html` com layout escuro/minimalista e tipografia serifada, alinhado às páginas de autenticação.
+- Implementação de menu lateral esquerdo com links para `diario.html`, `dashboard.html` e `login.html` (Sair).
+- Estrutura principal do painel com dois cards de métricas filosóficas.
+- Importação da biblioteca Chart.js via CDN (`https://cdn.jsdelivr.net/npm/chart.js`).
+- Configuração de gráfico de rosca para **Temas Filosóficos Mais Explorados** com dados simulados.
+- Configuração de gráfico de linha para **Evolução do Autoconhecimento** com dados simulados e estilização compatível com o tema.
