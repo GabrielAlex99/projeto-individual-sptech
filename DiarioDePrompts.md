@@ -64,3 +64,17 @@ Refatore os arquivos `public/login.html` e `public/cadastro.html` para remover r
   - `finalizarAguardar()` removida dos blocos de validação/erro em `login.html` e `cadastro.html`.
   - `limparFormulario()` removida do fluxo de sucesso em `cadastro.html`.
 - Preservação do layout visual e da lógica de requisição `fetch` para autenticação e cadastro.
+
+### Prompt
+Analisar as cinco páginas (`index`, `login`, `cadastro`, `diario`, `dashboard`) para extrair e unificar todo o CSS em um arquivo global e todo o JavaScript em um arquivo único, eliminando redundâncias de classes e adicionando verificações condicionais para evitar erros em páginas sem formulários ou gráficos.
+
+### Ação realizada
+- Criação do arquivo `public/css/global.css` com consolidação dos estilos das cinco páginas.
+- Unificação visual mantendo o tema sombrio/minimalista com tipografia serifada.
+- Remoção de redundâncias em estilos compartilhados (como `body`, `card` e botões), mantendo variações por contexto (home, autenticação, diário e dashboard).
+- Criação do arquivo `public/js/script.js` com consolidação de:
+  - Função `entrar()` (autenticação com `fetch` em `/usuarios/autenticar`);
+  - Função `cadastrar()` (cadastro com `fetch` em `/usuarios/cadastrar`);
+  - Inicialização de gráficos do dashboard (rosca e linha com dados simulados).
+- Inclusão de verificações condicionais no JS para evitar erros quando elementos não existem na página (ex.: `email_input`, `nome_input`, `graficoTemas`, `graficoEvolucao`).
+- Inclusão de carregamento condicional do Chart.js via CDN apenas quando há canvas de gráficos na página.
