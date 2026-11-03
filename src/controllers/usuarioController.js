@@ -1,94 +1,187 @@
-var usuarioModel = require("../models/usuarioModel");
-var aquarioModel = require("../models/aquarioModel");
+const usuarioModel = require("../models/usuarioModel");
+const crypto = require("crypto");
+const { promisify } = require("util");
 
-function autenticar(req, res) {
-    var email = req.body.emailServer;
-    var senha = req.body.senhaServer;
+const scryptAsync = promisify(crypto.scrypt);
+const tamanhoHash = 64;
 
-    if (email == undefined) {
-        res.status(400).send("Seu email está undefined!");
-    } else if (senha == undefined) {
-        res.status(400).send("Sua senha está indefinida!");
-    } else {
-
-        usuarioModel.autenticar(email, senha)
-            .then(
-                function (resultadoAutenticar) {
-                    console.log(`\nResultados encontrados: ${resultadoAutenticar.length}`);
-                    console.log(`Resultados: ${JSON.stringify(resultadoAutenticar)}`); // transforma JSON em String
-
-                    if (resultadoAutenticar.length == 1) {
-                        console.log(resultadoAutenticar);
-
-                        aquarioModel.buscarAquariosPorEmpresa(resultadoAutenticar[0].empresaId)
-                            .then((resultadoAquarios) => {
-                                if (resultadoAquarios.length > 0) {
-                                    res.json({
-                                        id: resultadoAutenticar[0].id,
-                                        email: resultadoAutenticar[0].email,
-                                        nome: resultadoAutenticar[0].nome,
-                                        senha: resultadoAutenticar[0].senha,
-                                        aquarios: resultadoAquarios
-                                    });
-                                } else {
-                                    res.status(204).json({ aquarios: [] });
-                                }
-                            })
-                    } else if (resultadoAutenticar.length == 0) {
-                        res.status(403).send("Email e/ou senha inválido(s)");
-                    } else {
-                        res.status(403).send("Mais de um usuário com o mesmo login e senha!");
-                    }
-                }
-            ).catch(
-                function (erro) {
-                    console.log(erro);
-                    console.log("\nHouve um erro ao realizar o login! Erro: ", erro.sqlMessage);
-                    res.status(500).json(erro.sqlMessage);
-                }
-            );
-    }
-
+function emailValido(email) {
+    return typeof email === "string" && email.includes("@") && email.includes(".");
 }
 
-function cadastrar(req, res) {
-    // Crie uma variável que vá recuperar os valores do arquivo cadastro.html
-    var nome = req.body.nomeServer;
-    var email = req.body.emailServer;
-    var senha = req.body.senhaServer;
-    var fkEmpresa = req.body.idEmpresaVincularServer;
+function senhaValida(senha) {
+    return typeof senha === "string" && senha.length >= 6;
+}
 
-    // Faça as validações dos valores
-    if (nome == undefined) {
-        res.status(400).send("Seu nome está undefined!");
-    } else if (email == undefined) {
-        res.status(400).send("Seu email está undefined!");
-    } else if (senha == undefined) {
-        res.status(400).send("Sua senha está undefined!");
-    } else if (fkEmpresa == undefined) {
-        res.status(400).send("Sua empresa a vincular está undefined!");
-    } else {
+function ehHashScrypt(valorSenha) {
+    return typeof valorSenha === "string" && valorSenha.startsWith("scrypt$");
+}
 
-        // Passe os valores como parâmetro e vá para o arquivo usuarioModel.js
-        usuarioModel.cadastrar(nome, email, senha, fkEmpresa)
-            .then(
-                function (resultado) {
-                    res.json(resultado);
-                }
-            ).catch(
-                function (erro) {
-                    console.log(erro);
-                    console.log(
-                        "\nHouve um erro ao realizar o cadastro! Erro: ",
-                        erro.sqlMessage
-                    );
-                    res.status(500).json(erro.sqlMessage);
-                }
-            );
+// Gera hash seguro da senha para armazenamento em banco.
+async function gerarHashSenha(senhaEmTexto) {
+    const salt = crypto.randomBytes(16).toString("hex");
+    const n = 16384;
+    const r = 8;
+    const p = 1;
+    const hashBuffer = await scryptAsync(senhaEmTexto, salt, tamanhoHash, { N: n, r: r, p: p });
+    return `scrypt$${n}$${r}$${p}$${salt}$${hashBuffer.toString("hex")}`;
+}
+
+// Compara a senha recebida com hash scrypt salvo no banco.
+async function validarSenhaScrypt(senhaEmTexto, senhaSalva) {
+    const partesHash = senhaSalva.split("$");
+
+    if (partesHash.length !== 6) {
+        return false;
     }
+
+    const n = Number(partesHash[1]);
+    const r = Number(partesHash[2]);
+    const p = Number(partesHash[3]);
+    const salt = partesHash[4];
+    const hashOriginalHex = partesHash[5];
+
+    if (!Number.isInteger(n) || !Number.isInteger(r) || !Number.isInteger(p)) {
+        return false;
+    }
+
+    const hashOriginalBuffer = Buffer.from(hashOriginalHex, "hex");
+    const hashCalculadoBuffer = await scryptAsync(senhaEmTexto, salt, hashOriginalBuffer.length, { N: n, r: r, p: p });
+
+    if (hashOriginalBuffer.length !== hashCalculadoBuffer.length) {
+        return false;
+    }
+
+    return crypto.timingSafeEqual(hashOriginalBuffer, hashCalculadoBuffer);
+}
+
+// Valida senha de conta nova (hash) e também de conta legada (texto puro).
+async function validarSenhaComMigracao(senhaEmTexto, senhaSalva) {
+    if (ehHashScrypt(senhaSalva)) {
+        return validarSenhaScrypt(senhaEmTexto, senhaSalva);
+    }
+
+    return senhaEmTexto === senhaSalva;
+}
+
+// Fluxo assíncrono de login com comparação segura de senha.
+async function autenticar(req, res) {
+    const email = req.body.emailServer ? req.body.emailServer.trim().toLowerCase() : "";
+    const senha = req.body.senhaServer ? req.body.senhaServer : "";
+
+    if (!email) {
+        return res.status(400).send("Informe o email.");
+    }
+
+    if (!senha) {
+        return res.status(400).send("Informe a senha.");
+    }
+
+    try {
+        const resultadoBusca = await usuarioModel.buscarPorEmail(email);
+
+        if (resultadoBusca.length !== 1) {
+            return res.status(403).send("Email e/ou senha inválido(s)");
+        }
+
+        const usuario = resultadoBusca[0];
+        const senhaValidaNoLogin = await validarSenhaComMigracao(senha, usuario.senha);
+
+        if (!senhaValidaNoLogin) {
+            return res.status(403).send("Email e/ou senha inválido(s)");
+        }
+
+        if (!ehHashScrypt(usuario.senha)) {
+            try {
+                const novoHash = await gerarHashSenha(senha);
+                await usuarioModel.atualizarSenhaHash(usuario.id, novoHash);
+            } catch (erroMigracao) {
+                console.log("Falha ao migrar senha legada para hash.", erroMigracao.sqlMessage || erroMigracao.message);
+            }
+        }
+
+        req.session.usuario = {
+            id: usuario.id,
+            nome: usuario.nome,
+            email: usuario.email
+        };
+
+        return res.json({
+            id: usuario.id,
+            email: usuario.email,
+            nome: usuario.nome
+        });
+    } catch (erro) {
+        console.log("Houve um erro ao realizar o login:", erro.sqlMessage || erro.message);
+        return res.status(500).send("Não foi possível realizar o login no momento.");
+    }
+}
+
+// Fluxo assíncrono de cadastro com armazenamento seguro da senha.
+async function cadastrar(req, res) {
+    const nome = req.body.nomeServer ? req.body.nomeServer.trim() : "";
+    const email = req.body.emailServer ? req.body.emailServer.trim().toLowerCase() : "";
+    const senha = req.body.senhaServer ? req.body.senhaServer : "";
+
+    if (!nome) {
+        return res.status(400).send("Informe o nome.");
+    }
+
+    if (!email || !emailValido(email)) {
+        return res.status(400).send("Informe um email válido.");
+    }
+
+    if (!senhaValida(senha)) {
+        return res.status(400).send("A senha deve ter pelo menos 6 caracteres.");
+    }
+
+    try {
+        const usuarioExistente = await usuarioModel.buscarPorEmail(email);
+
+        if (usuarioExistente.length > 0) {
+            return res.status(409).send("Este email já está cadastrado.");
+        }
+
+        const senhaHash = await gerarHashSenha(senha);
+        const resultado = await usuarioModel.cadastrar(nome, email, senhaHash);
+        return res.json(resultado);
+    } catch (erro) {
+        console.log("Houve um erro ao realizar o cadastro:", erro.sqlMessage || erro.message);
+        return res.status(500).send("Não foi possível realizar o cadastro no momento.");
+    }
+}
+
+function verificarSessao(req, res) {
+    if (!req.session || !req.session.usuario || !req.session.usuario.id) {
+        return res.status(401).send("Sessão inválida ou expirada.");
+    }
+
+    return res.status(200).json({
+        id: req.session.usuario.id,
+        nome: req.session.usuario.nome,
+        email: req.session.usuario.email
+    });
+}
+
+function encerrarSessao(req, res) {
+    if (!req.session) {
+        return res.status(200).send("Sessão encerrada.");
+    }
+
+    req.session.destroy(function (erro) {
+        if (erro) {
+            console.log("Erro ao encerrar sessão:", erro.message);
+            return res.status(500).send("Não foi possível encerrar a sessão no momento.");
+        }
+
+        res.clearCookie("connect.sid");
+        return res.status(200).send("Sessão encerrada com sucesso.");
+    });
 }
 
 module.exports = {
     autenticar,
-    cadastrar
-}
+    cadastrar,
+    verificarSessao,
+    encerrarSessao
+};

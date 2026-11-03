@@ -19,6 +19,8 @@ function sumirMensagem() {
   }
 }
 
+let sessaoDiarioValidada = false;
+
 // Função de login (usada no login.html)
 function entrar() {
   const emailInput = document.getElementById("email_input");
@@ -52,8 +54,6 @@ function entrar() {
         resposta.json().then(function (json) {
           sessionStorage.EMAIL_USUARIO = json.email;
           sessionStorage.NOME_USUARIO = json.nome;
-          sessionStorage.ID_USUARIO = json.id;
-          sessionStorage.AQUARIOS = JSON.stringify(json.aquarios);
 
           setTimeout(function () {
             window.location = "./diario.html";
@@ -133,6 +133,308 @@ function cadastrar() {
     });
 
   return false;
+}
+
+function formatarDataDiario(dataRegistro) {
+  const data = new Date(dataRegistro);
+
+  if (Number.isNaN(data.getTime())) {
+    return "Data indisponível";
+  }
+
+  return `${data.toLocaleDateString("pt-BR")} ${data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
+function atualizarStatusDiario(mensagem) {
+  const statusDiario = document.getElementById("status_diario");
+
+  if (statusDiario) {
+    statusDiario.innerText = mensagem;
+  }
+}
+
+function renderizarHistoricoDiario(listaRegistros) {
+  const historicoLista = document.getElementById("historico_lista");
+
+  if (!historicoLista) {
+    return;
+  }
+
+  historicoLista.innerHTML = "";
+
+  if (!Array.isArray(listaRegistros) || listaRegistros.length === 0) {
+    historicoLista.innerHTML = `
+      <li class="historico-item">
+        <strong>Você ainda não possui reflexões registradas.</strong>
+        <span>Publique sua primeira reflexão.</span>
+      </li>
+    `;
+    atualizarStatusDiario("Histórico vazio. Faça sua primeira publicação.");
+    return;
+  }
+
+  listaRegistros.forEach(function (registro) {
+    const item = document.createElement("li");
+    item.className = "historico-item";
+
+    item.innerHTML = `
+      <strong>${registro.titulo}</strong>
+      <span>${formatarDataDiario(registro.data_registro)}</span>
+    `;
+
+    historicoLista.appendChild(item);
+  });
+
+  atualizarStatusDiario("Histórico atualizado com sucesso.");
+}
+
+function renderizarErroHistoricoDiario() {
+  const historicoLista = document.getElementById("historico_lista");
+
+  if (!historicoLista) {
+    return;
+  }
+
+  historicoLista.innerHTML = `
+    <li class="historico-item">
+      <strong>Não foi possível carregar suas reflexões.</strong>
+      <span>Tente novamente em instantes.</span>
+    </li>
+  `;
+}
+
+function ocultarConteudoDiario() {
+  const conteudoDiario = document.getElementById("diario_conteudo");
+  const botaoPublicar = document.getElementById("botao_publicar_reflexao");
+
+  if (conteudoDiario) {
+    conteudoDiario.style.display = "none";
+  }
+
+  if (botaoPublicar) {
+    botaoPublicar.disabled = true;
+  }
+}
+
+function exibirConteudoDiario() {
+  const conteudoDiario = document.getElementById("diario_conteudo");
+  const botaoPublicar = document.getElementById("botao_publicar_reflexao");
+
+  if (conteudoDiario) {
+    conteudoDiario.style.display = "";
+  }
+
+  if (botaoPublicar) {
+    botaoPublicar.disabled = false;
+  }
+}
+
+function redirecionarParaLoginPorSessao(mensagem) {
+  sessaoDiarioValidada = false;
+  atualizarStatusDiario(mensagem || "Sessão expirada. Redirecionando para login...");
+  ocultarConteudoDiario();
+
+  setTimeout(function () {
+    window.location = "./login.html";
+  }, 1600);
+}
+
+// Requisição assíncrona para validar sessão antes de acessar tela protegida.
+function verificarSessaoUsuario() {
+  return fetch("/usuarios/sessao", {
+    method: "GET",
+    credentials: "same-origin",
+  }).then(function (resposta) {
+    if (resposta.status === 401) {
+      redirecionarParaLoginPorSessao();
+      return null;
+    }
+
+    if (!resposta.ok) {
+      throw new Error("Não foi possível validar a sessão.");
+    }
+
+    return resposta.json();
+  });
+}
+
+// Requisição assíncrona para carregar o histórico de diário do usuário logado.
+function carregarHistoricoDiario() {
+  atualizarStatusDiario("Carregando histórico...");
+
+  fetch("/diario/listar", {
+    method: "GET",
+    credentials: "same-origin",
+  })
+    .then(function (resposta) {
+      if (resposta.status === 401) {
+        redirecionarParaLoginPorSessao();
+        return null;
+      }
+
+      if (resposta.status === 204) {
+        renderizarHistoricoDiario([]);
+        return [];
+      }
+
+      if (!resposta.ok) {
+        throw new Error("Não foi possível carregar o histórico do diário.");
+      }
+
+      return resposta.json();
+    })
+    .then(function (listaRegistros) {
+      if (listaRegistros === null) {
+        return;
+      }
+
+      renderizarHistoricoDiario(listaRegistros);
+    })
+    .catch(function (erro) {
+      console.log("Erro ao carregar histórico do diário:", erro);
+      atualizarStatusDiario("Erro ao carregar histórico. Tente novamente.");
+      renderizarErroHistoricoDiario();
+    });
+}
+
+// Requisição assíncrona para publicar uma nova reflexão no diário.
+function publicarReflexao() {
+  if (!sessaoDiarioValidada) {
+    atualizarStatusDiario("Aguarde a validação da sessão para publicar.");
+    return false;
+  }
+
+  const tituloInput = document.getElementById("titulo_reflexao_input");
+  const conteudoInput = document.getElementById("conteudo_reflexao_input");
+  const botaoPublicar = document.getElementById("botao_publicar_reflexao");
+
+  if (!tituloInput || !conteudoInput) {
+    atualizarStatusDiario("Não foi possível localizar os campos do diário.");
+    return false;
+  }
+
+  const titulo = tituloInput.value.trim();
+  const conteudo = conteudoInput.value.trim();
+
+  if (!titulo || !conteudo) {
+    atualizarStatusDiario("Preencha título e conteúdo para publicar.");
+    return false;
+  }
+
+  if (botaoPublicar) {
+    botaoPublicar.disabled = true;
+  }
+
+  atualizarStatusDiario("Publicando reflexão...");
+
+  fetch("/diario/publicar", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      titulo: titulo,
+      conteudo: conteudo,
+    }),
+  })
+    .then(function (resposta) {
+      if (resposta.status === 401) {
+        redirecionarParaLoginPorSessao();
+        return null;
+      }
+
+      if (!resposta.ok) {
+        return resposta.text().then(function (textoErro) {
+          throw new Error(textoErro || "Falha ao publicar reflexão.");
+        });
+      }
+
+      return resposta.json();
+    })
+    .then(function (resultadoPublicacao) {
+      if (resultadoPublicacao === null) {
+        return;
+      }
+
+      if (!tituloInput || !conteudoInput) {
+        return;
+      }
+
+      tituloInput.value = "";
+      conteudoInput.value = "";
+      atualizarStatusDiario("Reflexão publicada com sucesso.");
+      carregarHistoricoDiario();
+    })
+    .catch(function (erro) {
+      console.log("Erro ao publicar reflexão:", erro);
+      atualizarStatusDiario("Erro ao publicar reflexão. Tente novamente.");
+    })
+    .finally(function () {
+      if (botaoPublicar) {
+        botaoPublicar.disabled = false;
+      }
+    });
+
+  return false;
+}
+
+// Requisição assíncrona para encerrar a sessão do usuário no servidor.
+function encerrarSessaoUsuario() {
+  fetch("/usuarios/sair", {
+    method: "POST",
+    credentials: "same-origin",
+  })
+    .catch(function (erro) {
+      console.log("Erro ao encerrar sessão:", erro);
+    })
+    .finally(function () {
+      sessionStorage.removeItem("EMAIL_USUARIO");
+      sessionStorage.removeItem("NOME_USUARIO");
+      window.location = "./login.html";
+    });
+}
+
+function inicializarAcaoSair() {
+  const linksSair = document.querySelectorAll('a[href="login.html"]');
+
+  linksSair.forEach(function (linkSair) {
+    linkSair.addEventListener("click", function (evento) {
+      evento.preventDefault();
+      encerrarSessaoUsuario();
+    });
+  });
+}
+
+function inicializarPaginaDiario() {
+  const historicoLista = document.getElementById("historico_lista");
+
+  if (!historicoLista) {
+    return;
+  }
+
+  atualizarStatusDiario("Verificando sessão...");
+  ocultarConteudoDiario();
+
+  verificarSessaoUsuario()
+    .then(function (dadosSessao) {
+      if (!dadosSessao) {
+        return;
+      }
+
+      sessaoDiarioValidada = true;
+      exibirConteudoDiario();
+      carregarHistoricoDiario();
+    })
+    .catch(function (erro) {
+      console.log("Erro ao validar sessão:", erro);
+      redirecionarParaLoginPorSessao(
+        "Não foi possível validar a sessão (conexão indisponível). Redirecionando para login..."
+      );
+    });
 }
 
 // Carrega Chart.js apenas quando necessário
@@ -254,6 +556,9 @@ function inicializarGraficos() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  inicializarAcaoSair();
+  inicializarPaginaDiario();
+
   carregarChartJsSeNecessario().then(function (podeInicializar) {
     if (podeInicializar) {
       inicializarGraficos();

@@ -10,17 +10,25 @@ require("dotenv").config({ path: caminho_env });
 var express = require("express");
 var cors = require("cors");
 var path = require("path");
+var session = require("express-session");
 var PORTA_APP = process.env.APP_PORT;
 var HOST_APP = process.env.APP_HOST;
+var SESSION_SECRET = process.env.SESSION_SECRET;
 
 var app = express();
 
+if (!SESSION_SECRET) {
+    console.log("SESSION_SECRET não foi configurado no ambiente.");
+    process.exit(1);
+}
+
+if (process.env.AMBIENTE_PROCESSO === "producao") {
+    app.set("trust proxy", 1);
+}
+
 var indexRouter = require("./src/routes/index");
 var usuarioRouter = require("./src/routes/usuarios");
-var avisosRouter = require("./src/routes/avisos");
-var medidasRouter = require("./src/routes/medidas");
-var aquariosRouter = require("./src/routes/aquarios");
-var empresasRouter = require("./src/routes/empresas");
+var diarioRouter = require("./src/routes/diario");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -28,12 +36,21 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cors());
 
+app.use(session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.AMBIENTE_PROCESSO === "producao",
+        maxAge: 1000 * 60 * 60 * 2
+    }
+}));
+
 app.use("/", indexRouter);
 app.use("/usuarios", usuarioRouter);
-app.use("/avisos", avisosRouter);
-app.use("/medidas", medidasRouter);
-app.use("/aquarios", aquariosRouter);
-app.use("/empresas", empresasRouter);
+app.use("/diario", diarioRouter);
 
 app.listen(PORTA_APP, function () {
     console.log(`

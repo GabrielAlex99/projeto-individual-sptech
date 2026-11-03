@@ -21,37 +21,38 @@
   <main class="conteudo">
     <h2 class="titulo">Diário Filosófico</h2>
     <p class="subtitulo">Registre suas reflexões e acompanhe sua jornada de pensamento.</p>
+    <p class="subtitulo" id="status_diario">Verificando sessão...</p>
 
-    <section class="layout-diario">
+    <section class="layout-diario" id="diario_conteudo" style="display: none;">
       <article class="card area-reflexao">
-        <h2>Interação com o Agente de IA</h2>
-        <textarea placeholder="Escreva sua reflexão, dúvida ou insight filosófico..."></textarea>
-        <button class="botao-enviar">Enviar Reflexão</button>
+        <h2>Nova Reflexão</h2>
+
+        <div class="campo">
+          <span>Título:</span>
+          <input id="titulo_reflexao_input" type="text" placeholder="Ex.: O peso das escolhas" maxlength="150">
+        </div>
+
+        <div class="campo">
+          <span>Conteúdo:</span>
+          <textarea id="conteudo_reflexao_input" placeholder="Escreva sua reflexão, dúvida ou insight filosófico..."></textarea>
+        </div>
+
+        <button id="botao_publicar_reflexao" class="botao-enviar" onclick="publicarReflexao()">Publicar reflexão</button>
       </article>
 
       <aside class="card">
         <h2>Histórico de Reflexões</h2>
-        <ul class="historico-lista">
+        <ul class="historico-lista" id="historico_lista">
           <li class="historico-item">
-            <strong>O peso das escolhas</strong>
-            <span>27/10/2026</span>
-          </li>
-          <li class="historico-item">
-            <strong>Viver com virtude</strong>
-            <span>24/10/2026</span>
-          </li>
-          <li class="historico-item">
-            <strong>Quem sou eu além dos papéis?</strong>
-            <span>20/10/2026</span>
-          </li>
-          <li class="historico-item">
-            <strong>Liberdade e responsabilidade</strong>
-            <span>16/10/2026</span>
+            <strong>Nenhuma reflexão carregada.</strong>
+            <span>--/--/----</span>
           </li>
         </ul>
       </aside>
     </section>
   </main>
+
+  <script src="./js/script.js"></script>
 </body>
 
 </html>
