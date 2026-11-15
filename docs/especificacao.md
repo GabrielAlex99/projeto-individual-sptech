@@ -65,8 +65,11 @@ O servidor deve identificar o usuário autenticado pela sessão. Para operaçõe
 
 1. A interface deve carregar uma pergunta ativa e suas alternativas a partir do banco.
 2. A interface deve informar carregamento, ausência de pergunta e falha de comunicação.
-3. O usuário autenticado poderá registrar a alternativa escolhida quando essa etapa for implementada.
-4. A regra de cálculo de resultado deve ser definida antes da implementação do resultado dinâmico. O esquema possui corrente filosófica e peso nas alternativas, mas a forma de combinar respostas ainda precisa ser decidida.
+3. A leitura da pergunta ativa e das alternativas é pública e não exige sessão autenticada.
+4. O envio de resposta da descoberta exige sessão autenticada no servidor.
+5. No envio da resposta, a interface deve enviar somente o identificador da alternativa escolhida.
+6. No salvamento da resposta, o servidor deve identificar o usuário pela sessão e validar a alternativa para a pergunta ativa, sem confiar em identificadores de usuário ou pergunta enviados pela interface.
+7. A regra de cálculo de resultado deve ser definida antes da implementação do resultado dinâmico. O esquema possui corrente filosófica e peso nas alternativas, mas a forma de combinar respostas ainda precisa ser decidida.
 
 ### 5.4 Resultado filosófico
 
@@ -98,6 +101,10 @@ RN06. Respostas filosóficas devem estar vinculadas ao usuário autenticado, à 
 RN07. A regra do banco prevê no máximo uma resposta por usuário para cada pergunta. Qualquer mudança nessa regra precisa ser especificada antes de alterar o esquema.
 
 RN08. A criação ou exclusão de tabelas e outras alterações estruturais no banco dependem de solicitação explícita. O agente não deve executar comandos SQL no banco por iniciativa própria.
+
+RN09. Na descoberta, a consulta da pergunta ativa e alternativas é pública; a rota de envio de resposta é privada e exige sessão autenticada.
+
+RN10. No envio da resposta da descoberta, a interface deve informar apenas `idAlternativa`; o servidor deve obter o usuário pela sessão e determinar a pergunta ativa no backend.
 
 ## 7. Dados tratados
 
@@ -153,10 +160,9 @@ CA08. Nenhuma funcionalidade expõe segredos, hashes de senha ou conteúdo priva
 ## 11. Pendências que precisam de decisão
 
 1. Cadastrar dados iniciais de perguntas e alternativas no banco.
-2. Definir se a descoberta exige autenticação antes de responder ou somente antes de salvar a resposta.
-3. Definir como combinar os pesos das alternativas e resolver empates no resultado.
-4. Definir quais métricas e períodos a dashboard deve apresentar.
-5. Definir se haverá compartilhamento voluntário de reflexões em uma área separada. Até essa decisão, os registros permanecem privados.
+2. Definir como combinar os pesos das alternativas e resolver empates no resultado.
+3. Definir quais métricas e períodos a dashboard deve apresentar.
+4. Definir se haverá compartilhamento voluntário de reflexões em uma área separada. Até essa decisão, os registros permanecem privados.
 
 ## 12. Uso desta especificação
 

@@ -90,3 +90,24 @@ Criar os arquivos `public/descoberta.html` e `public/resultado.html` com identid
 - Em ambas as páginas, inclusão das referências obrigatórias:
   - `<link rel="stylesheet" href="./css/global.css">`
   - `<script src="./js/script.js"></script>`
+
+## 2026-11-15
+
+### Prompt
+Atualize o plano da funcionalidade de descoberta e registre essa alteração no diário de prompts, incluindo: tratamento de duplicidade no banco com `ER_DUP_ENTRY` retornando `409` com mensagem de resposta já registrada, e remoção do avanço para `resultado.html` estático até existir resultado dinâmico.
+
+### Ação realizada
+- Atualização de `docs/planoImplementacao.md` para complementar a validação de resposta repetida com fallback de erro de duplicidade MySQL (`ER_DUP_ENTRY`), retornando `409` com a mesma mensagem clara de resposta já registrada e sem expor detalhes internos.
+- Atualização do plano para incluir ajuste de interface na descoberta: remover link clicável para `resultado.html` nesta etapa e, após salvamento bem-sucedido, exibir mensagem informando que a resposta foi registrada e que o resultado será conectado em etapa futura.
+- Revisão das seções de arquivos envolvidos, fluxo, validações, respostas da API, impactos e etapas de validação para refletir essas duas decisões, mantendo as demais definições já aprovadas.
+
+## 2026-11-15
+
+### Prompt
+Atualize a especificação geral para refletir a regra de acesso definida no plano da descoberta: leitura pública da pergunta ativa e alternativas, e salvamento da resposta apenas para usuário autenticado com identificação via sessão e envio de somente `idAlternativa` pela interface.
+
+### Ação realizada
+- Atualização de `docs/especificacao.md` na seção de funcionalidades da descoberta para explicitar que a consulta da pergunta ativa e alternativas é pública (sem sessão).
+- Atualização de `docs/especificacao.md` para definir que o envio de resposta exige sessão autenticada, com identificação do usuário no servidor e envio de apenas `idAlternativa` pela interface.
+- Inclusão dessas definições nas regras de negócio da especificação.
+- Remoção da pendência sobre “exigir autenticação antes de interagir ou somente ao salvar resposta”, mantendo as demais pendências.
