@@ -51,6 +51,29 @@ body > header + main {
   font-size: 1.1rem;
 }
 
+/* Link secundário reutilizável (login/cadastro) */
+.link-secundario {
+  color: #cdbb92;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(216, 180, 106, 0.45);
+  transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.88;
+}
+
+.link-secundario:hover {
+  color: #e8d8b2;
+  border-bottom-color: #d8b46a;
+  opacity: 1;
+}
+
+.link-secundario:focus-visible {
+  outline: 2px solid rgba(216, 180, 106, 0.7);
+  outline-offset: 2px;
+  border-bottom-color: #d8b46a;
+  color: #efe2c0;
+  opacity: 1;
+}
+
 /* Menu lateral (diário/dashboard) */
 .menu-lateral {
   position: fixed;
@@ -291,6 +314,36 @@ body > .card h1 {
 .historico-item span {
   color: #b9b2a0;
   font-size: 0.95rem;
+}
+
+.historico-titulo-toggle {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #f0e9d5;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.historico-titulo-toggle::before {
+  content: "▸ ";
+  color: #d8b46a;
+}
+
+.historico-item.aberto .historico-titulo-toggle::before {
+  content: "▾ ";
+}
+
+.historico-conteudo {
+  color: #d1c9b3;
+  margin-top: 8px;
+  line-height: 1.4;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 980px) {

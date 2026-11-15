@@ -180,10 +180,27 @@ function renderizarHistoricoDiario(listaRegistros) {
     const item = document.createElement("li");
     item.className = "historico-item";
 
-    item.innerHTML = `
-      <strong>${registro.titulo}</strong>
-      <span>${formatarDataDiario(registro.data_registro)}</span>
-    `;
+    const botaoTitulo = document.createElement("button");
+    botaoTitulo.type = "button";
+    botaoTitulo.className = "historico-titulo-toggle";
+    botaoTitulo.textContent = registro.titulo || "Sem título";
+
+    const dataRegistro = document.createElement("span");
+    dataRegistro.textContent = formatarDataDiario(registro.data_registro);
+
+    const conteudoCompleto = document.createElement("p");
+    conteudoCompleto.className = "historico-conteudo";
+    conteudoCompleto.style.display = "none";
+    conteudoCompleto.textContent = registro.conteudo || "Sem conteúdo.";
+
+    botaoTitulo.addEventListener("click", function () {
+      const estaAberto = item.classList.toggle("aberto");
+      conteudoCompleto.style.display = estaAberto ? "block" : "none";
+    });
+
+    item.appendChild(botaoTitulo);
+    item.appendChild(dataRegistro);
+    item.appendChild(conteudoCompleto);
 
     historicoLista.appendChild(item);
   });
