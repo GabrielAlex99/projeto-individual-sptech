@@ -21,26 +21,24 @@
 
   <main class="conteudo">
     <h2 class="titulo">Dashboard</h2>
-    <p class="subtitulo">Esqueleto inicial de métricas filosóficas com dados simulados.</p>
+    <p class="subtitulo">Distribuição das correntes escolhidas na pergunta filosófica ativa.</p>
+    <p class="subtitulo" id="status_dashboard">Carregando respostas registradas...</p>
 
     <section class="painel">
       <article class="card">
-        <h2>Temas Filosóficos Mais Explorados</h2>
+        <h2>Respostas por corrente filosófica</h2>
+        <section id="resumo_metricas_dashboard" class="resumo-metricas-dashboard" style="display: none;">
+          <p><strong>Total de respostas:</strong> <span id="total_respostas_dashboard"></span></p>
+          <p><strong>Corrente com mais respostas:</strong> <span id="corrente_lider_dashboard"></span></p>
+        </section>
         <div class="grafico-container">
           <canvas id="graficoTemas"></canvas>
         </div>
-      </article>
-
-      <article class="card">
-        <h2>Evolução do Autoconhecimento</h2>
-        <div class="grafico-container">
-          <canvas id="graficoEvolucao"></canvas>
-        </div>
+        <ul id="metricas_textuais" class="metricas-textuais" style="display: none;"></ul>
       </article>
     </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="./js/script.js"></script>
 </body>
 

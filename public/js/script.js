@@ -20,6 +20,10 @@ function sumirMensagem() {
 }
 
 let sessaoDiarioValidada = false;
+let chartDisponivelDashboard = false;
+let chartCarregamentoDashboardConcluido = false;
+let graficoDashboardInicializado = false;
+let metricasDashboardCarregadas = null;
 
 // Função de login (usada no login.html)
 function entrar() {
@@ -156,6 +160,97 @@ function atualizarStatusDiario(mensagem) {
   }
 }
 
+function criarBotaoExcluirReflexao(registro, itemHistorico) {
+  const botaoExcluir = document.createElement("button");
+  botaoExcluir.type = "button";
+  botaoExcluir.className = "botao-excluir-reflexao";
+  botaoExcluir.textContent = "Excluir reflexão";
+
+  botaoExcluir.addEventListener("click", function () {
+    excluirReflexaoDiario(registro.idDiario, itemHistorico, botaoExcluir);
+  });
+
+  return botaoExcluir;
+}
+
+// Requisição assíncrona para excluir uma reflexão específica do usuário autenticado.
+function excluirReflexaoDiario(idDiario, itemHistorico, botaoExcluir) {
+  const idConvertido = Number(idDiario);
+
+  if (!Number.isInteger(idConvertido) || idConvertido <= 0) {
+    atualizarStatusDiario("Não foi possível identificar a reflexão para exclusão.");
+    return;
+  }
+
+  if (!sessaoDiarioValidada) {
+    atualizarStatusDiario("Sessão inválida. Faça login novamente para excluir.");
+    return;
+  }
+
+  const confirmouExclusao = window.confirm("Deseja realmente excluir esta reflexão?");
+
+  if (!confirmouExclusao) {
+    return;
+  }
+
+  if (botaoExcluir) {
+    botaoExcluir.disabled = true;
+    botaoExcluir.textContent = "Excluindo...";
+  }
+
+  atualizarStatusDiario("Excluindo reflexão...");
+
+  fetch(`/diario/deletar/${idConvertido}`, {
+    method: "DELETE",
+    credentials: "same-origin",
+  })
+    .then(function (resposta) {
+      if (resposta.status === 401) {
+        redirecionarParaLoginPorSessao();
+        return null;
+      }
+
+      if (!resposta.ok) {
+        return resposta.text().then(function (textoErro) {
+          throw new Error(textoErro || "Não foi possível excluir a reflexão.");
+        });
+      }
+
+      return resposta.json();
+    })
+    .then(function (resultadoExclusao) {
+      if (resultadoExclusao === null) {
+        return;
+      }
+
+      const totalAfetado = Number(resultadoExclusao.affectedRows);
+
+      if (!Number.isInteger(totalAfetado) || totalAfetado < 1) {
+        throw new Error("Não foi possível excluir a reflexão solicitada.");
+      }
+
+      if (itemHistorico && itemHistorico.parentNode) {
+        itemHistorico.parentNode.removeChild(itemHistorico);
+      }
+
+      const historicoLista = document.getElementById("historico_lista");
+
+      if (historicoLista && historicoLista.children.length === 0) {
+        renderizarHistoricoDiario([]);
+      } else {
+        atualizarStatusDiario("Reflexão excluída com sucesso.");
+      }
+    })
+    .catch(function (erro) {
+      console.log("Erro ao excluir reflexão:", erro);
+      atualizarStatusDiario(erro.message || "Erro ao excluir reflexão. Tente novamente.");
+      if (botaoExcluir) {
+        botaoExcluir.disabled = false;
+        botaoExcluir.textContent = "Excluir reflexão";
+      }
+    });
+}
+
 function renderizarHistoricoDiario(listaRegistros) {
   const historicoLista = document.getElementById("historico_lista");
 
@@ -192,6 +287,7 @@ function renderizarHistoricoDiario(listaRegistros) {
     conteudoCompleto.className = "historico-conteudo";
     conteudoCompleto.style.display = "none";
     conteudoCompleto.textContent = registro.conteudo || "Sem conteúdo.";
+    const botaoExcluir = criarBotaoExcluirReflexao(registro, item);
 
     botaoTitulo.addEventListener("click", function () {
       const estaAberto = item.classList.toggle("aberto");
@@ -201,6 +297,7 @@ function renderizarHistoricoDiario(listaRegistros) {
     item.appendChild(botaoTitulo);
     item.appendChild(dataRegistro);
     item.appendChild(conteudoCompleto);
+    item.appendChild(botaoExcluir);
 
     historicoLista.appendChild(item);
   });
@@ -458,9 +555,8 @@ function inicializarPaginaDiario() {
 function carregarChartJsSeNecessario() {
   return new Promise(function (resolve) {
     const graficoTemas = document.getElementById("graficoTemas");
-    const graficoEvolucao = document.getElementById("graficoEvolucao");
 
-    if (!graficoTemas && !graficoEvolucao) {
+    if (!graficoTemas) {
       resolve(false);
       return;
     }
@@ -484,24 +580,124 @@ function carregarChartJsSeNecessario() {
   });
 }
 
-// Inicializa gráficos do dashboard com dados simulados
-function inicializarGraficos() {
-  const graficoTemas = document.getElementById("graficoTemas");
-  const graficoEvolucao = document.getElementById("graficoEvolucao");
+function paginaDashboardAtiva() {
+  return Boolean(document.getElementById("status_dashboard"));
+}
 
-  if (!window.Chart) {
+function atualizarStatusDashboard(mensagem) {
+  const statusDashboard = document.getElementById("status_dashboard");
+
+  if (statusDashboard) {
+    statusDashboard.textContent = mensagem;
+  }
+}
+
+function renderizarMetricasTextuaisDashboard(metricas, exibir) {
+  const listaMetricas = document.getElementById("metricas_textuais");
+
+  if (!listaMetricas) {
     return;
   }
 
-  if (graficoTemas) {
+  listaMetricas.innerHTML = "";
+  listaMetricas.style.display = exibir ? "flex" : "none";
+
+  if (!exibir || !Array.isArray(metricas)) {
+    return;
+  }
+
+  metricas.forEach(function (metrica) {
+    const item = document.createElement("li");
+    item.textContent = `${metrica.correnteFilosofica}: ${Number(metrica.totalRespostas)} resposta(s)`;
+    listaMetricas.appendChild(item);
+  });
+}
+
+function atualizarResumoDashboard(totalTexto, correnteTexto, exibir) {
+  const resumo = document.getElementById("resumo_metricas_dashboard");
+  const total = document.getElementById("total_respostas_dashboard");
+  const lider = document.getElementById("corrente_lider_dashboard");
+
+  if (!resumo || !total || !lider) {
+    return;
+  }
+
+  total.textContent = totalTexto;
+  lider.textContent = correnteTexto;
+  resumo.style.display = exibir ? "block" : "none";
+}
+
+function calcularResumoDashboard(metricas) {
+  if (!Array.isArray(metricas) || metricas.length === 0) {
+    return {
+      totalRespostas: 0,
+      correnteLider: "Nenhuma corrente com respostas registradas.",
+    };
+  }
+
+  let totalRespostas = 0;
+  let maiorTotal = 0;
+  const correntesLideres = [];
+
+  metricas.forEach(function (metrica) {
+    const totalCorrente = Number(metrica.totalRespostas);
+    const totalValido = Number.isFinite(totalCorrente) ? totalCorrente : 0;
+
+    totalRespostas += totalValido;
+
+    if (totalValido > maiorTotal) {
+      maiorTotal = totalValido;
+      correntesLideres.length = 0;
+      correntesLideres.push(metrica.correnteFilosofica);
+      return;
+    }
+
+    if (totalValido === maiorTotal && totalValido > 0) {
+      correntesLideres.push(metrica.correnteFilosofica);
+    }
+  });
+
+  if (totalRespostas === 0 || maiorTotal === 0 || correntesLideres.length === 0) {
+    return {
+      totalRespostas: totalRespostas,
+      correnteLider: "Nenhuma corrente com respostas registradas.",
+    };
+  }
+
+  if (correntesLideres.length === 1) {
+    return {
+      totalRespostas: totalRespostas,
+      correnteLider: correntesLideres[0],
+    };
+  }
+
+  return {
+    totalRespostas: totalRespostas,
+    correnteLider: `Empate entre: ${correntesLideres.join(", ")}.`,
+  };
+}
+
+// Inicializa o gráfico com as métricas retornadas pela API.
+function inicializarGraficos(metricas) {
+  const graficoTemas = document.getElementById("graficoTemas");
+
+  if (!window.Chart || !graficoTemas) {
+    return false;
+  }
+
+  try {
     new Chart(graficoTemas, {
       type: "doughnut",
       data: {
-        labels: ["Ética", "Existencialismo", "Estoicismo", "Metafísica", "Lógica"],
+        labels: metricas.map(function (metrica) {
+          return metrica.correnteFilosofica;
+        }),
         datasets: [
           {
-            label: "Temas explorados",
-            data: [28, 22, 19, 17, 14],
+            label: "Respostas registradas",
+            data: metricas.map(function (metrica) {
+              return Number(metrica.totalRespostas);
+            }),
             backgroundColor: ["#d8b46a", "#9e8a58", "#6f6550", "#4f4a41", "#2f2f33"],
             borderColor: "#111114",
             borderWidth: 2,
@@ -519,66 +715,110 @@ function inicializarGraficos() {
         },
       },
     });
+
+    return true;
+  } catch (erroGrafico) {
+    console.log("Falha ao criar gráfico da dashboard:", erroGrafico);
+    return false;
+  }
+}
+
+function tentarInicializarGraficoDashboard() {
+  if (!paginaDashboardAtiva() || graficoDashboardInicializado) {
+    return;
   }
 
-  if (graficoEvolucao) {
-    new Chart(graficoEvolucao, {
-      type: "line",
-      data: {
-        labels: ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5", "Semana 6"],
-        datasets: [
-          {
-            label: "Índice de autoconhecimento",
-            data: [42, 49, 53, 61, 68, 74],
-            fill: true,
-            tension: 0.3,
-            borderColor: "#d8b46a",
-            backgroundColor: "rgba(216, 180, 106, 0.16)",
-            pointBackgroundColor: "#e7d7b0",
-            pointBorderColor: "#d8b46a",
-            pointRadius: 4,
-          },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            ticks: {
-              color: "#d1c9b3",
-            },
-            grid: {
-              color: "rgba(255, 255, 255, 0.08)",
-            },
-          },
-          y: {
-            ticks: {
-              color: "#d1c9b3",
-            },
-            grid: {
-              color: "rgba(255, 255, 255, 0.08)",
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: "#e7e3d5",
-            },
-          },
-        },
-      },
-    });
+  if (!Array.isArray(metricasDashboardCarregadas) || metricasDashboardCarregadas.length === 0) {
+    return;
   }
+
+  if (!chartCarregamentoDashboardConcluido) {
+    atualizarStatusDashboard("Métricas carregadas com dados reais. Carregando gráfico...");
+    return;
+  }
+
+  if (!chartDisponivelDashboard) {
+    atualizarStatusDashboard("Gráfico indisponível no momento. Valores exibidos em texto.");
+    return;
+  }
+
+  const graficoCriado = inicializarGraficos(metricasDashboardCarregadas);
+
+  if (graficoCriado) {
+    graficoDashboardInicializado = true;
+    atualizarStatusDashboard("Métricas calculadas com as respostas registradas para a pergunta ativa.");
+  } else {
+    chartDisponivelDashboard = false;
+    atualizarStatusDashboard("Métricas carregadas, mas o gráfico está indisponível no momento.");
+  }
+}
+
+// Requisição assíncrona para carregar a quantidade de respostas por corrente.
+function carregarMetricasDashboard() {
+  fetch("/dashboard/metricas", {
+    method: "GET",
+    credentials: "same-origin",
+  })
+    .then(function (resposta) {
+      if (resposta.status === 401) {
+        metricasDashboardCarregadas = null;
+        renderizarMetricasTextuaisDashboard([], false);
+        atualizarResumoDashboard("Não disponível sem sessão ativa.", "Não disponível sem sessão ativa.", true);
+        atualizarStatusDashboard("Entre na sua conta para consultar as métricas.");
+        return null;
+      }
+
+      if (resposta.status === 204) {
+        metricasDashboardCarregadas = [];
+        renderizarMetricasTextuaisDashboard([], false);
+        atualizarResumoDashboard("0", "Nenhuma corrente com respostas registradas.", true);
+        atualizarStatusDashboard("Ainda não há respostas registradas para a pergunta ativa.");
+        return [];
+      }
+
+      if (!resposta.ok) {
+        throw new Error("Não foi possível carregar as métricas.");
+      }
+
+      return resposta.json();
+    })
+    .then(function (metricas) {
+      if (metricas === null || metricas.length === 0) {
+        return;
+      }
+
+      metricasDashboardCarregadas = metricas;
+      const resumoMetricas = calcularResumoDashboard(metricas);
+      atualizarResumoDashboard(String(resumoMetricas.totalRespostas), resumoMetricas.correnteLider, true);
+      renderizarMetricasTextuaisDashboard(metricas, true);
+      tentarInicializarGraficoDashboard();
+    })
+    .catch(function (erro) {
+      console.log("Erro ao carregar métricas da dashboard:", erro);
+      metricasDashboardCarregadas = null;
+      renderizarMetricasTextuaisDashboard([], false);
+      atualizarResumoDashboard("Indisponível no momento.", "Indisponível no momento.", true);
+      atualizarStatusDashboard("Não foi possível consultar as métricas no momento.");
+    });
+}
+
+// Inicia somente o fluxo da dashboard quando a página correspondente estiver ativa.
+function inicializarPaginaDashboard() {
+  if (!paginaDashboardAtiva()) {
+    return;
+  }
+
+  carregarMetricasDashboard();
+
+  carregarChartJsSeNecessario().then(function (podeInicializar) {
+    chartDisponivelDashboard = podeInicializar;
+    chartCarregamentoDashboardConcluido = true;
+    tentarInicializarGraficoDashboard();
+  });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
   inicializarAcaoSair();
   inicializarPaginaDiario();
-
-  carregarChartJsSeNecessario().then(function (podeInicializar) {
-    if (podeInicializar) {
-      inicializarGraficos();
-    }
-  });
+  inicializarPaginaDashboard();
 });

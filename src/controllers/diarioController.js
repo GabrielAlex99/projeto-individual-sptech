@@ -72,6 +72,10 @@ function deletar(req, res) {
     // Fluxo assíncrono para deletar um registro do diário.
     diarioModel.deletar(idDiario, idUsuarioSessao)
         .then(function (resultado) {
+            if (!resultado || resultado.affectedRows < 1) {
+                return res.status(404).send("Reflexão não encontrada para exclusão.");
+            }
+
             res.json(resultado);
         })
         .catch(function (erro) {

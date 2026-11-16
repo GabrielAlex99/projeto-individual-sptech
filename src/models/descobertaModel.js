@@ -79,6 +79,57 @@ function buscarRespostaPorUsuarioPergunta(idUsuario, idPerguntaAtiva) {
     return database.executar(instrucaoSql, [idUsuario, idPerguntaAtiva]);
 }
 
+function buscarRespostaDoUsuarioNaPerguntaAtiva(idUsuario) {
+    console.log("ACESSEI O DESCOBERTA MODEL \n\n function buscarRespostaDoUsuarioNaPerguntaAtiva()");
+
+    // Query de banco para obter a alternativa já escolhida pelo usuário na pergunta ativa.
+    const instrucaoSql = `
+        SELECT
+            r.fk_alternativa AS idAlternativa
+        FROM resposta_filosofica r
+        WHERE r.fk_usuario = ?
+          AND r.fk_pergunta = (
+              SELECT p.id
+              FROM pergunta_filosofica p
+              WHERE p.ativo = 1
+              ORDER BY p.ordem_exibicao ASC
+              LIMIT 1
+          )
+        LIMIT 1;
+    `;
+
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql, [idUsuario]);
+}
+
+function buscarResultadoDoUsuario(idUsuario) {
+    console.log("ACESSEI O DESCOBERTA MODEL \n\n function buscarResultadoDoUsuario()");
+
+    // Query parametrizada para obter a corrente associada à resposta da pergunta ativa.
+    const instrucaoSql = `
+        SELECT
+            p.enunciado AS enunciadoPergunta,
+            p.categoria,
+            a.texto AS textoAlternativa,
+            a.corrente_filosofica AS correnteFilosofica
+        FROM resposta_filosofica r
+        INNER JOIN pergunta_filosofica p ON p.id = r.fk_pergunta
+        INNER JOIN alternativa_filosofica a ON a.id = r.fk_alternativa
+        WHERE r.fk_usuario = ?
+          AND p.id = (
+              SELECT id
+              FROM pergunta_filosofica
+              WHERE ativo = 1
+              ORDER BY ordem_exibicao ASC
+              LIMIT 1
+          )
+        LIMIT 1;
+    `;
+
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql, [idUsuario]);
+}
+
 function registrarResposta(idUsuario, idPerguntaAtiva, idAlternativa) {
     console.log("ACESSEI O DESCOBERTA MODEL \n\n function registrarResposta()");
 
@@ -97,5 +148,7 @@ module.exports = {
     buscarPerguntaAtiva,
     buscarAlternativaDaPerguntaAtiva,
     buscarRespostaPorUsuarioPergunta,
+    buscarRespostaDoUsuarioNaPerguntaAtiva,
+    buscarResultadoDoUsuario,
     registrarResposta
 };

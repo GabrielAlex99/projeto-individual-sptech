@@ -17,10 +17,20 @@
       <a class="link-secundario" href="dashboard.html">Dashboard</a>
     </nav>
     <p id="status_descoberta" class="subtitulo">Carregando pergunta filosófica...</p>
+    <p><a id="link_resultado" class="link-secundario" href="resultado.html" style="display: none;">Ver meu resultado</a></p>
 
     <h2 id="enunciado_pergunta">Aguardando pergunta ativa...</h2>
 
     <section id="alternativas_container"></section>
+
+    <section id="resultado_descoberta" class="resultado-descoberta" style="display: none;">
+      <h2>Seu resultado nesta pergunta ativa</h2>
+      <p class="subtitulo" id="resultado_descoberta_status">Consultando resultado pessoal...</p>
+      <p><strong>Corrente:</strong> <span id="corrente_descoberta"></span></p>
+      <p><strong>Pergunta ativa:</strong> <span id="pergunta_descoberta"></span></p>
+      <p><strong>Alternativa escolhida:</strong> <span id="alternativa_descoberta"></span></p>
+      <p id="explicacao_descoberta" class="subtitulo"></p>
+    </section>
   </main>
 
   <script src="./js/descoberta.js"></script>

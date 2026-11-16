@@ -4,7 +4,7 @@
 
 O Projeto Filosofia é uma aplicação web acadêmica para apoiar o autoconhecimento por meio de perguntas filosóficas, registro de reflexões pessoais e apresentação de informações agregadas em uma dashboard.
 
-O sistema começou a partir de uma estrutura Web Data Viz. O fluxo atual já possui cadastro, login com senha armazenada em formato de hash, sessão no servidor e diário conectado ao MySQL. A tela de descoberta já consulta uma pergunta ativa e suas alternativas, mas depende de registros existentes no banco. O registro de respostas, o resultado calculado e a dashboard com dados reais ainda são etapas futuras.
+O sistema começou a partir de uma estrutura Web Data Viz. O fluxo atual possui cadastro, login com senha armazenada em formato de hash, sessão no servidor e diário conectado ao MySQL. A descoberta consulta perguntas e alternativas, registra uma resposta por usuário para a pergunta ativa e permite consultar a escolha salva. Nesta etapa, o resultado pessoal corresponde à corrente filosófica associada à alternativa escolhida na pergunta ativa, e a dashboard apresenta a contagem de respostas por corrente para essa pergunta.
 
 Esta especificação reúne objetivos e regras estáveis do projeto. Cada plano de implementação deve atender somente à funcionalidade pedida na tarefa em andamento. A existência de uma funcionalidade nesta especificação não significa que ela já esteja implementada.
 
@@ -17,7 +17,7 @@ A aplicação também deverá apresentar uma dashboard com dados agregados das r
 ## 3. Usuários e acesso
 
 1. Visitante. Pode acessar as páginas públicas e iniciar o fluxo de cadastro ou login.
-2. Usuário autenticado. Pode acessar as funcionalidades associadas à própria conta, incluindo o diário e o registro de respostas que venha a ser implementado.
+2. Usuário autenticado. Pode acessar as funcionalidades associadas à própria conta, incluindo o diário, o registro de respostas e o resultado da pergunta ativa.
 
 O servidor deve identificar o usuário autenticado pela sessão. Para operações privadas, o identificador do usuário deve vir da sessão validada no servidor.
 
@@ -60,6 +60,7 @@ O servidor deve identificar o usuário autenticado pela sessão. Para operaçõe
 3. Cada registro do histórico deve permitir a leitura do conteúdo completo.
 4. O usuário não pode consultar ou excluir registros pertencentes a outra conta.
 5. O diário permanece privado por padrão.
+6. O usuário autenticado pode excluir apenas as próprias reflexões já registradas.
 
 ### 5.3 Descoberta filosófica
 
@@ -69,20 +70,21 @@ O servidor deve identificar o usuário autenticado pela sessão. Para operaçõe
 4. O envio de resposta da descoberta exige sessão autenticada no servidor.
 5. No envio da resposta, a interface deve enviar somente o identificador da alternativa escolhida.
 6. No salvamento da resposta, o servidor deve identificar o usuário pela sessão e validar a alternativa para a pergunta ativa, sem confiar em identificadores de usuário ou pergunta enviados pela interface.
-7. A regra de cálculo de resultado deve ser definida antes da implementação do resultado dinâmico. O esquema possui corrente filosófica e peso nas alternativas, mas a forma de combinar respostas ainda precisa ser decidida.
+7. Para a pergunta ativa atual, o resultado pessoal é a corrente filosófica associada à alternativa registrada pelo usuário. Os pesos não são combinados nesta etapa.
+8. Quando houver resposta já registrada para a pergunta ativa, a interface deve permitir consultar e destacar visualmente a alternativa escolhida pelo usuário autenticado.
 
 ### 5.4 Resultado filosófico
 
-1. O resultado deverá ser calculado a partir de respostas realmente registradas.
-2. A tela não deve apresentar uma corrente fixa como se fosse resultado individual quando ainda não houver cálculo baseado em respostas.
-3. A regra de desempate e a quantidade de respostas necessárias permanecem pendentes de definição.
+1. O resultado pessoal da pergunta ativa deve vir da alternativa registrada pelo usuário autenticado.
+2. A tela não deve apresentar uma corrente fixa quando o usuário ainda não tiver resposta registrada para a pergunta ativa.
+3. Caso o questionário passe a ter várias perguntas, a combinação de pesos e o desempate deverão ser definidos antes da ampliação do cálculo.
 
 ### 5.5 Dashboard
 
-1. A dashboard deverá apresentar dados agregados das respostas filosóficas.
-2. Os gráficos deverão utilizar dados fornecidos pelo sistema, e não valores simulados, quando a integração for concluída.
+1. A dashboard apresenta a quantidade de respostas por corrente filosófica para a pergunta ativa.
+2. Os gráficos devem usar respostas registradas no banco e exibir um estado vazio quando não houver respostas.
 3. A dashboard não deve exibir o conteúdo textual privado dos diários.
-4. As métricas e os períodos exibidos devem ser definidos antes da implementação final.
+4. Métricas por período e outras agregações permanecem fora desta etapa.
 
 ## 6. Regras de negócio
 
@@ -105,6 +107,14 @@ RN08. A criação ou exclusão de tabelas e outras alterações estruturais no b
 RN09. Na descoberta, a consulta da pergunta ativa e alternativas é pública; a rota de envio de resposta é privada e exige sessão autenticada.
 
 RN10. No envio da resposta da descoberta, a interface deve informar apenas `idAlternativa`; o servidor deve obter o usuário pela sessão e determinar a pergunta ativa no backend.
+
+RN11. A exclusão de reflexões do diário deve considerar o usuário da sessão e só pode remover registros pertencentes ao próprio autor.
+
+RN12. A consulta da resposta já registrada na descoberta deve usar sessão autenticada e permitir destaque visual da alternativa salva.
+
+RN13. Para a pergunta ativa atual, o resultado pessoal corresponde à corrente filosófica da alternativa escolhida pelo usuário autenticado.
+
+RN14. A dashboard deve contar respostas registradas por corrente filosófica para a pergunta ativa, sem consultar ou exibir reflexões do diário.
 
 ## 7. Dados tratados
 
@@ -153,16 +163,15 @@ CA05. O histórico permite ler o conteúdo completo de cada reflexão do usuári
 
 CA06. A tela de descoberta apresenta a pergunta ativa e suas alternativas cadastradas ou informa claramente quando esses dados não estão disponíveis.
 
-CA07. Respostas, resultados e métricas futuras são derivados de dados armazenados, conforme regras definidas, sem valores fictícios apresentados como reais.
+CA07. O resultado pessoal e as métricas da dashboard são derivados das respostas armazenadas, sem valores fictícios apresentados como reais.
 
 CA08. Nenhuma funcionalidade expõe segredos, hashes de senha ou conteúdo privado do diário.
 
 ## 11. Pendências que precisam de decisão
 
-1. Cadastrar dados iniciais de perguntas e alternativas no banco.
-2. Definir como combinar os pesos das alternativas e resolver empates no resultado.
-3. Definir quais métricas e períodos a dashboard deve apresentar.
-4. Definir se haverá compartilhamento voluntário de reflexões em uma área separada. Até essa decisão, os registros permanecem privados.
+1. Definir como combinar pesos e resolver empates caso o questionário passe a ter várias perguntas.
+2. Definir métricas adicionais e períodos para a dashboard, se forem necessários.
+3. Definir se haverá compartilhamento voluntário de reflexões em uma área separada. Até essa decisão, os registros permanecem privados.
 
 ## 12. Uso desta especificação
 

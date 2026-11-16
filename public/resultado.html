@@ -10,13 +10,29 @@
 
 <body>
   <main class="card">
-    <h1>Estoicismo</h1>
-    <p class="subtitulo">Você demonstra inclinação a buscar equilíbrio interno, aceitando aquilo que não pode controlar e transformando desafios em disciplina, lucidez e virtude no cotidiano.</p>
+    <h1 id="corrente_resultado">Carregando seu resultado...</h1>
+    <p class="subtitulo" id="status_resultado">Consultando sua resposta registrada...</p>
 
-    <a class="botao-descoberta" href="cadastro.html">Iniciar Jornada</a>
+    <section id="resultado_conteudo" style="display: none;">
+      <p class="subtitulo">Pergunta respondida</p>
+      <p id="pergunta_resultado"></p>
+      <p class="subtitulo">Alternativa escolhida</p>
+      <p id="alternativa_resultado"></p>
+      <p class="subtitulo">Nesta etapa, o resultado corresponde à corrente associada à alternativa escolhida na pergunta ativa.</p>
+    </section>
+
+    <nav class="subtitulo">
+      <a class="link-secundario" href="descoberta.html">Descoberta</a>
+      &nbsp;•&nbsp;
+      <a class="link-secundario" href="diario.html">Diário</a>
+      &nbsp;•&nbsp;
+      <a class="link-secundario" href="dashboard.html">Dashboard</a>
+      &nbsp;•&nbsp;
+      <a class="link-secundario" href="login.html">Login</a>
+    </nav>
   </main>
 
-  <script src="./js/script.js"></script>
+  <script src="./js/resultado.js"></script>
 </body>
 
 </html>

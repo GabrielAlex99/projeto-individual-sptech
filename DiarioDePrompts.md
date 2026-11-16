@@ -151,3 +151,184 @@ Ajustar apenas a navegação entre telas para permitir acesso à descoberta pelo
 - Atualização do menu lateral de `public/dashboard.html` com novo link para `descoberta.html`.
 - Inclusão de navegação simples em `public/descoberta.html` com links para `diario.html` e `dashboard.html`, mantendo coerência visual com os estilos existentes.
 - Nenhum link para `resultado.html` foi adicionado na navegação da descoberta.
+
+## 2026-11-15
+
+### Prompt
+Implementar apenas a visualização persistente da resposta já registrada na descoberta, com consulta protegida por sessão para a resposta do usuário na pergunta ativa e destaque visual da alternativa escolhida ao salvar e ao reabrir a página.
+
+### Ação realizada
+- Criação da rota `GET /descoberta/resposta-ativa` protegida por sessão para consultar a resposta do usuário autenticado na pergunta ativa.
+- Implementação no controlador da descoberta para retornar:
+  - `200` com `idAlternativa` quando houver resposta;
+  - `204` quando não houver resposta registrada;
+  - `401` para sessão inválida;
+  - `500` em falha de consulta.
+- Implementação no model com consulta parametrizada para buscar a alternativa já registrada do usuário na pergunta ativa.
+- Atualização de `public/js/descoberta.js` para:
+  - consultar resposta registrada após carregar pergunta/alternativas;
+  - destacar a alternativa já escolhida;
+  - desabilitar opções quando já houver resposta;
+  - destacar e bloquear alternativas imediatamente após salvamento bem-sucedido.
+- Inclusão de estilo específico em `public/css/global.css` para destacar visualmente o botão da alternativa registrada.
+
+## 2026-11-15
+
+### Prompt
+Corrigir a descoberta para tratar claramente os estados da resposta salva (com destaque perceptível e sem falso destaque) e implementar exclusão de reflexões no diário usando a rota `DELETE /diario/deletar/:idDiario` com confirmação, bloqueio de cliques repetidos e atualização da interface apenas após sucesso.
+
+### Ação realizada
+- Ajuste de `public/js/descoberta.js` para separar os estados da consulta da resposta salva:
+  - sem sessão: mensagem orientando entrar na conta para responder;
+  - sem resposta: opções habilitadas para escolha;
+  - resposta encontrada: destaque da alternativa correspondente e bloqueio das opções;
+  - falha de consulta: mensagem visível de erro sem afirmar verificação concluída.
+- Inclusão de validação de correspondência entre `idAlternativa` retornado e alternativas renderizadas, evitando destaque falso quando não houver opção correspondente.
+- Reforço visual em `public/css/global.css` para alternativa registrada continuar claramente destacada, inclusive desabilitada.
+- Implementação em `public/js/script.js` de botão de exclusão para cada reflexão com criação via DOM, confirmação por `confirm()`, chamada `DELETE` com sessão, bloqueio de cliques repetidos durante a requisição e remoção do item apenas após confirmação de sucesso.
+- Ajuste em `src/controllers/diarioController.js` para não simular sucesso quando nada for removido (`affectedRows < 1`), retornando mensagem de não encontrado para exclusão.
+- Atualização de `docs/especificacao.md` para registrar a exclusão das próprias reflexões e a visualização da resposta salva na descoberta, sem alterar a pendência de cálculo de resultado.
+
+## 2026-11-16
+
+### Prompt
+Diagnosticar por que resultado e dashboard não funcionavam para o usuário e corrigir somente a causa comprovada, mantendo sessão, resposta única e dados reais.
+
+### Ação realizada
+- Diagnóstico do processo em execução e das rotas: `GET /descoberta/pergunta-ativa` respondeu `200` no servidor atual; chamadas protegidas sem cookie (`/descoberta/resposta-ativa`, `/descoberta/meu-resultado`, `/dashboard/metricas`) responderam `401`, confirmando proteção por sessão ativa no backend.
+- Identificada causa funcional na dashboard: o carregamento de métricas dependia do Chart.js. Quando o CDN falhava, a tela não consultava a API e não exibia os valores reais.
+- Correção em `public/js/script.js` para consultar `/dashboard/metricas` mesmo sem Chart.js e exibir fallback textual com contagens reais por corrente.
+- Ajuste em `public/dashboard.html` com container textual (`#metricas_textuais`) e em `public/css/global.css` com estilo simples para a lista textual.
+- Mantido o resultado pessoal baseado na resposta salva do usuário autenticado e sem alteração na regra de uma resposta por usuário/pergunta.
+
+## 2026-11-16
+
+### Prompt
+Fechar diagnóstico e correção de Resultado e Dashboard com dados reais e sessão autenticada, separando falha de API de falha de gráfico e garantindo fallback textual quando necessário.
+
+### Ação realizada
+- Revisão do encadeamento atual de `public/js/script.js` e confirmação de rotas/endereços ativos em `app.js`, `src/routes/descoberta.js` e `src/routes/dashboard.js`.
+- Ajuste da renderização da dashboard para separar cenários:
+  - falha da API continua tratada no fluxo de `fetch`/status HTTP;
+  - falha na criação do gráfico (mesmo com métricas carregadas) passou a ser tratada separadamente, com mensagem específica e manutenção dos dados reais em lista textual.
+- Atualização da função de criação de gráfico para retornar sucesso/falha sem lançar erro para o bloco de erro da API.
+- Preservação das regras de sessão e da regra de uma resposta por usuário/pergunta, sem mudanças no banco, rotas de autenticação, diário ou exclusão.
+
+## 2026-11-16
+
+### Prompt
+Realizar auditoria completa do projeto com testes de rotas/páginas e comparação com documentação, sem implementar novas correções nesta etapa.
+
+### Ação realizada
+- Auditoria documental e técnica em `AGENTS.md`, `docs/especificacao.md`, `docs/planoImplementacao.md`, entradas recentes deste diário e arquivos de rotas/controladores/modelos/interfaces.
+- Verificação de infraestrutura local:
+  - porta `3333` estava livre antes de iniciar o servidor;
+  - servidor iniciado com `node app.js` no diretório do projeto;
+  - respostas HTTP de páginas estáticas, CSS e JS confirmaram que o conteúdo servido corresponde aos arquivos atuais desta pasta.
+- Testes HTTP executados sem sessão (via `curl`):
+  - `GET /descoberta/pergunta-ativa` → `200` com pergunta ativa e 4 alternativas;
+  - `GET /descoberta/resposta-ativa` → `401`;
+  - `GET /descoberta/meu-resultado` → `401`;
+  - `GET /dashboard/metricas` → `401`;
+  - `GET /usuarios/sessao` → `401`;
+  - `POST /usuarios/autenticar` com corpo vazio → `400` ("Informe o email.").
+- Limitações registradas:
+  - sem credenciais válidas/cookie de sessão no ambiente de teste, não foi possível validar fluxo autenticado fim a fim;
+  - sem observação direta em navegador neste contexto, validações visuais de Resultado e Dashboard ficaram pendentes.
+- Divergência encontrada entre documentos:
+  - `docs/planoImplementacao.md` ainda descreve etapa sem conexão de resultado/dashboard;
+  - `docs/especificacao.md` e código atual já consideram resultado pessoal e métricas da dashboard conectados a dados reais.
+
+## 2026-11-15
+
+### Prompt
+Conectar o resultado pessoal à alternativa salva e substituir os dados simulados da dashboard por contagens reais de respostas por corrente filosófica para a pergunta ativa, usando como regra inicial a corrente associada à alternativa escolhida.
+
+### Ação realizada
+- Inclusão de consulta autenticada do resultado pessoal na descoberta, usando o usuário da sessão e a corrente associada à resposta da pergunta ativa.
+- Atualização da tela `public/resultado.html` para exibir a pergunta, a alternativa escolhida e a corrente retornada pela API, com estados para sessão ausente, resposta inexistente e erro.
+- Inclusão de link para o resultado após o registro ou a consulta de uma resposta existente na descoberta.
+- Criação da rota, controlador e modelo da dashboard para contar respostas registradas por corrente filosófica na pergunta ativa.
+- Substituição dos dados simulados do gráfico por dados retornados pela API e inclusão de mensagens para carregamento, ausência de respostas e falha.
+- Atualização de `docs/especificacao.md` com a regra inicial de resultado e a métrica implementada, mantendo como pendentes somente as regras para várias perguntas e métricas por período.
+- Nenhuma alteração estrutural ou execução de SQL no banco.
+
+## 2026-11-16
+
+### Prompt
+Registrar o estado da integração do resultado pessoal e da dashboard com respostas reais, para continuidade do trabalho no OpenCode.
+
+### Ação realizada
+- Resultado pessoal definido para a pergunta ativa como a corrente filosófica associada à alternativa escolhida pelo usuário autenticado.
+- Adicionada consulta autenticada do resultado pessoal em `GET /descoberta/meu-resultado`.
+- `public/resultado.html` deixou de exibir uma corrente fixa e passou a carregar pergunta, alternativa e corrente pela API.
+- Adicionado link para abrir o resultado após a resposta ser salva ou recuperada na descoberta.
+- Criada a rota autenticada `GET /dashboard/metricas` com consulta agregada da quantidade de respostas por corrente na pergunta ativa.
+- Dashboard atualizada para substituir dados simulados por dados retornados pela API e informar carregamento, ausência de respostas e falha.
+- Arquivos envolvidos nesta integração: `app.js`, `src/routes/descoberta.js`, `src/controllers/descobertaController.js`, `src/models/descobertaModel.js`, `src/routes/dashboard.js`, `src/controllers/dashboardController.js`, `src/models/dashboardModel.js`, `public/descoberta.html`, `public/js/descoberta.js`, `public/resultado.html`, `public/js/resultado.js`, `public/dashboard.html`, `public/js/script.js`, `docs/especificacao.md` e este diário.
+- Nenhuma tabela foi criada ou alterada e nenhum SQL foi executado.
+- A implementação ainda precisa de diagnóstico e validação no navegador. O usuário informou que as telas ainda não estão funcionais. Antes de novas alterações, conferir rotas, respostas HTTP, sessão, caminhos dos scripts e estados visuais, sem presumir que a falha seja de banco.
+
+## 2026-11-16
+
+### Prompt
+Melhorar a experiência nas páginas Início, Descoberta e Dashboard com os dados reais já existentes, sem alterações de backend, mantendo escopo acadêmico e registrando validações realizadas.
+
+### Ação realizada
+- Atualização de `public/index.html` para ampliar o conteúdo da página inicial com:
+  - propósito do projeto;
+  - relação entre filosofia, autoconhecimento e diário de reflexões;
+  - caminhos claros para cadastro e login.
+- Atualização de `public/descoberta.html` e `public/js/descoberta.js` para exibir, na própria descoberta, o resultado pessoal da pergunta ativa quando:
+  - já existe resposta registrada ao abrir a página; ou
+  - a resposta acabou de ser salva com sucesso.
+- Mantida a regra de bloqueio da segunda tentativa e o destaque da alternativa original na descoberta.
+- Tratamento explícito de estados na descoberta:
+  - sessão ausente;
+  - resposta ainda não registrada;
+  - falha de API;
+  - resultado carregado.
+- Atualização de `public/dashboard.html` e `public/js/script.js` para incluir resumo textual com:
+  - total de respostas;
+  - corrente líder (com tratamento de empate).
+- Preservado uso das métricas reais da API (`/dashboard/metricas`) sem alterar consulta, banco ou backend.
+- Mantido fallback textual quando o gráfico estiver indisponível, preservando a apresentação dos dados em texto.
+- Ajustes visuais em `public/css/global.css` para as novas seções da home, descoberta e dashboard, mantendo o tema escuro/dourado.
+
+### Validações realizadas
+- Verificação de sintaxe JavaScript:
+  - `node --check public/js/descoberta.js`
+  - `node --check public/js/script.js`
+- Revisão estrutural dos arquivos alterados para garantir IDs, caminhos e carregamento dos scripts nas páginas.
+- Limitação desta etapa: não houve validação visual em navegador no ambiente desta execução, então a validação visual completa permanece pendente.
+
+## 2026-11-16
+
+### Prompt
+Corrigir somente a inicialização da Dashboard para iniciar consulta de métricas sem aguardar Chart.js, restringir o fluxo ao contexto da página dashboard e manter resumo/métricas textuais reais quando o gráfico estiver lento ou indisponível.
+
+### Ação realizada
+- Ajuste de `public/js/script.js` para inicialização específica da dashboard:
+  - criada verificação de página ativa (`paginaDashboardAtiva`);
+  - criada função `inicializarPaginaDashboard` para executar o fluxo apenas quando `status_dashboard` existir;
+  - removida a chamada global que iniciava métricas para qualquer página com `script.js`.
+- Ajuste de ordem de execução na dashboard:
+  - `GET /dashboard/metricas` agora inicia imediatamente ao carregar a página dashboard;
+  - carregamento do Chart.js acontece em paralelo e não bloqueia a consulta da API.
+- Ajuste de renderização para manter dados reais visíveis:
+  - resumo textual e lista de métricas textuais continuam visíveis com dados da API mesmo enquanto o gráfico carrega lentamente;
+  - em falha de carregamento/criação de gráfico, mantém os dados textuais e atualiza status com indisponibilidade do gráfico.
+- Preservados os estados já existentes:
+  - sessão ausente (`401`);
+  - ausência de respostas (`204`);
+  - falha da API (`catch`/status não ok).
+- Atualização de `public/dashboard.html` para remover import síncrono direto do CDN do Chart.js, evitando bloqueio da inicialização da consulta de métricas.
+
+### Validações realizadas
+- Verificação de sintaxe JavaScript:
+  - `node --check public/js/script.js`
+- Revisão de código e caminhos:
+  - `public/dashboard.html` mantém apenas `./js/script.js`;
+  - `public/js/script.js` chama `carregarMetricasDashboard()` somente dentro de `inicializarPaginaDashboard()`.
+- Limitação desta etapa:
+  - sem observação direta em navegador nesta execução, a validação visual/autenticada permanece pendente.

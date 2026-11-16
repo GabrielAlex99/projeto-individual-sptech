@@ -38,6 +38,52 @@ function buscarPerguntaAtiva(req, res) {
         });
 }
 
+// Fluxo assíncrono para consultar a resposta já registrada do usuário na pergunta ativa.
+async function buscarRespostaAtiva(req, res) {
+    const idUsuarioSessao = req.session?.usuario?.id;
+
+    if (!idValido(idUsuarioSessao)) {
+        return res.status(401).send("Sessão inválida ou expirada. Faça login novamente.");
+    }
+
+    try {
+        const resposta = await descobertaModel.buscarRespostaDoUsuarioNaPerguntaAtiva(idUsuarioSessao);
+
+        if (!resposta || resposta.length === 0) {
+            return res.status(204).send("Nenhuma resposta registrada para a pergunta ativa.");
+        }
+
+        return res.status(200).json({
+            idAlternativa: resposta[0].idAlternativa
+        });
+    } catch (erro) {
+        console.log("Houve um erro ao consultar resposta ativa da descoberta:", erro.sqlMessage || erro.message);
+        return res.status(500).send("Não foi possível consultar a resposta registrada no momento.");
+    }
+}
+
+// Fluxo assíncrono para montar o resultado pessoal a partir da alternativa registrada.
+async function buscarMeuResultado(req, res) {
+    const idUsuarioSessao = req.session?.usuario?.id;
+
+    if (!idValido(idUsuarioSessao)) {
+        return res.status(401).send("Sessão inválida ou expirada. Faça login novamente.");
+    }
+
+    try {
+        const resultado = await descobertaModel.buscarResultadoDoUsuario(idUsuarioSessao);
+
+        if (!resultado || resultado.length === 0) {
+            return res.status(204).send("Ainda não há resposta registrada para a pergunta ativa.");
+        }
+
+        return res.status(200).json(resultado[0]);
+    } catch (erro) {
+        console.log("Houve um erro ao buscar o resultado pessoal:", erro.sqlMessage || erro.message);
+        return res.status(500).send("Não foi possível carregar seu resultado no momento.");
+    }
+}
+
 // Fluxo assíncrono para validar e registrar a resposta da descoberta do usuário autenticado.
 async function responderPergunta(req, res) {
     const idUsuarioSessao = req.session?.usuario?.id;
@@ -85,5 +131,7 @@ async function responderPergunta(req, res) {
 
 module.exports = {
     buscarPerguntaAtiva,
+    buscarRespostaAtiva,
+    buscarMeuResultado,
     responderPergunta
 };
