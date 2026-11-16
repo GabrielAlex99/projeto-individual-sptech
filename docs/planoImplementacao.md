@@ -1,148 +1,346 @@
-# Plano de implementação — Registro de resposta na Descoberta
+# Plano de implementação — Evolução para questionário de 5 perguntas, resultado por pesos, dashboard ampliada e navegação unificada
 
 ## 1) Necessidade tratada
-Registrar no banco de dados a alternativa escolhida por um usuário autenticado na tela de descoberta, reaproveitando a pergunta ativa e as alternativas já carregadas pela funcionalidade atual.
 
-## 2) Pré-requisitos (obrigatórios)
-1. Deve existir **uma pergunta ativa** em `pergunta_filosofica`.
-2. Devem existir **alternativas cadastradas** para a pergunta ativa em `alternativa_filosofica`.
-3. O usuário deve estar autenticado com sessão válida no servidor.
+Planejar a evolução do projeto para:
+1. questionário dinâmico com 5 perguntas ativas;
+2. resultado final por soma de pesos por corrente filosófica;
+3. dashboard com métricas diferenciando respostas e participantes;
+4. navegação consistente entre páginas;
+5. página inicial com história pessoal autorizada e suporte a foto real da tatuagem.
 
-> Observação: este plano **não** cria dados e **não** insere dados de apoio manualmente.
+> Este plano **não implementa código**, **não executa SQL** e **não altera estrutura do banco**.
 
-## 3) Análise da implementação atual (resumo)
-- A tela de descoberta já busca pergunta ativa e alternativas em `GET /descoberta/pergunta-ativa`.
-- A sessão autenticada já existe via `express-session` e é acessível por `req.session.usuario.id`.
-- O middleware `src/middlewares/autenticacao.js` já valida sessão.
-- A tabela `resposta_filosofica` já possui restrição `UNIQUE (fk_usuario, fk_pergunta)`, permitindo somente uma resposta por usuário por pergunta.
-- Ainda não existe endpoint para gravar a resposta da descoberta.
+---
 
-## 4) Arquivos envolvidos
-1. **Interface**
-   - `public/js/descoberta.js` (enviar apenas `idAlternativa`, tratar retorno e mensagem pós-registro)
-   - `public/descoberta.html` (remover link clicável para `resultado.html` nesta etapa)
-2. **Rota**
-   - `src/routes/descoberta.js` (nova rota de gravação)
-3. **Controlador**
-   - `src/controllers/descobertaController.js` (nova ação para validar e coordenar gravação)
-4. **Modelo**
-   - `src/models/descobertaModel.js` (consultas parametrizadas para validações e insert)
-5. **Middleware existente (reuso)**
-   - `src/middlewares/autenticacao.js` (aplicar apenas na nova rota de gravação)
+## 2) Diagnóstico da implementação atual (base para evolução)
 
-## 5) Fluxo da funcionalidade (interface → rota → controlador → modelo)
-1. Usuário clica em uma alternativa na descoberta.
-2. A interface envia `POST /descoberta/responder` com body contendo **somente**:
-   - `{ "idAlternativa": <numero_inteiro> }`
-3. A rota de gravação aplica `autenticacao.validarSessao` **somente nesse endpoint**.
-4. No controlador:
-   - obtém `idUsuario` da sessão (`req.session.usuario.id`);
-   - valida `idAlternativa`;
-   - solicita ao model a pergunta ativa;
-   - valida se a alternativa pertence à pergunta ativa;
-   - verifica se já existe resposta do usuário para essa pergunta;
-   - se não existir, solicita insert da resposta;
-   - se ocorrer erro de duplicidade MySQL (`ER_DUP_ENTRY`), retorna `409` com a mesma mensagem de resposta já registrada, sem expor detalhes internos.
-5. No model:
-   - executa queries parametrizadas (`?`) para:
-     - buscar pergunta ativa;
-      - validar vínculo alternativa ↔ pergunta ativa;
-      - verificar resposta existente do usuário;
-      - inserir nova resposta.
-6. O controlador retorna a mensagem adequada para cada cenário.
-7. Após sucesso, a interface informa que a resposta foi registrada e que o resultado dinâmico será conectado em etapa futura, sem redirecionar para `resultado.html`.
+### 2.1 Descoberta e resultado hoje
+- A descoberta usa a primeira pergunta ativa por menor ordem (`ativo = 1`, `ORDER BY ordem_exibicao ASC LIMIT 1`).
+- A regra atual de resposta única por usuário/pergunta já está protegida por backend e pela restrição de unicidade no banco.
+- Resultado pessoal atual é derivado apenas da alternativa da pergunta ativa.
 
-## 6) Validações obrigatórias
-1. **Sessão válida**:
-   - usuário identificado exclusivamente por `req.session.usuario.id`.
-2. **Entrada da interface**:
-   - `idAlternativa` obrigatório, inteiro e maior que zero.
-3. **Pergunta ativa existente**:
-   - se não houver, não grava.
-4. **Alternativa válida para pergunta ativa**:
-   - rejeitar alternativa inexistente ou de outra pergunta.
-5. **Resposta repetida**:
-   - se já houver resposta do usuário para a pergunta, manter resposta original e não editar.
-6. **Duplicidade também tratada no erro de gravação**:
-   - além da verificação prévia, se o MySQL retornar `ER_DUP_ENTRY`, responder `409` com mensagem de já respondida.
-7. **Persistência segura**:
-   - consultas parametrizadas em todas as queries com entrada externa.
+### 2.2 Dashboard hoje
+- Dashboard retorna contagem por corrente para a pergunta ativa atual.
+- Já existe fallback textual quando o gráfico não está disponível.
 
-## 7) Respostas planejadas da API
-1. **Sucesso (resposta registrada)**  
-   - Status: `201`  
-   - Mensagem: `"Resposta registrada com sucesso."`
+### 2.3 Navegação e home hoje
+- Navegação ainda não é totalmente consistente entre todas as páginas.
+- Home atual apresenta objetivo acadêmico, mas ainda não inclui toda a narrativa pessoal solicitada e a seção da tatuagem com foto real.
 
-2. **Sessão ausente/expirada**  
-   - Status: `401`  
-   - Mensagem: `"Sessão inválida ou expirada. Faça login novamente."`
+### 2.4 Risco principal de compatibilidade
+- Existem respostas históricas registradas para apenas uma pergunta ativa.
+- Ao ativar mais perguntas, usuários anteriormente “concluídos” ficarão “incompletos” até responder novas perguntas ativas.
 
-3. **Alternativa inválida / sem pergunta ativa / dados inválidos**  
-   - Status: `400`  
-   - Mensagens possíveis:
-     - `"Dados da resposta inválidos."`
-     - `"Nenhuma pergunta ativa disponível para resposta."`
-     - `"Alternativa inválida para a pergunta ativa."`
+---
 
-4. **Resposta repetida (já respondida)**  
-   - Status: `409`  
-   - Mensagem: `"Você já respondeu a pergunta ativa. A resposta original foi mantida."`
+## 3) Regras propostas (para orientar implementação)
 
-5. **Erro interno**  
-   - Status: `500`  
-   - Mensagem: `"Não foi possível registrar a resposta no momento."`
+1. **Disponibilidade de pergunta**: `ativo = 1` significa “faz parte do questionário”.
+2. **Próxima pergunta do usuário autenticado**: menor `ordem_exibicao` ativa ainda não respondida por ele.
+3. **Resposta única**: manter uma resposta por usuário/pergunta (regra atual).
+4. **Resultado final**: soma de `peso` das alternativas por `corrente_filosofica`.
+5. **Empate**: exibir todas as correntes empatadas no maior valor de soma.
+6. **Conclusão**: resultado final concluído apenas quando todas as perguntas ativas estiverem respondidas.
+7. **Novas perguntas ativas após conclusão**: usuário volta para estado de questionário incompleto.
+8. **Dashboard**:
+   - métrica 1: total de respostas registradas;
+   - métrica 2: total de usuários participantes (usuários com ao menos uma resposta no conjunto ativo);
+   - métrica 3: distribuição por corrente (baseada nas respostas registradas).
 
-> Regra complementar de tratamento: se o insert falhar com `ER_DUP_ENTRY`, retornar exatamente o mesmo cenário de resposta repetida (`409` + mesma mensagem), sem repassar `sqlMessage` ao cliente.
+---
 
-## 8) Impactos nas telas atuais
-- **`descoberta.html` / `public/js/descoberta.js`**:
-  - passa a registrar resposta ao clicar em alternativa;
-  - exibe feedback de sucesso, erro, sessão ausente e resposta repetida;
-  - remove navegação clicável para `resultado.html` enquanto o resultado dinâmico não existir;
-  - após salvar com sucesso, mostra mensagem: resposta registrada e resultado será conectado em etapa futura.
-- **Demais telas**:
-  - sem alteração funcional nesta etapa (`resultado.html`, dashboard, diário, login/cadastro).
+## 4) Ordem sugerida de implementação (etapas dependentes)
 
-## 9) Etapas numeradas com validação simples
-1. **Criar endpoint de gravação na rota de descoberta**
-   - Validação simples: chamada sem sessão retorna `401`.
+## Etapa 1 — Consolidar regras na especificação (documentação)
 
-2. **Aplicar middleware de sessão apenas na nova rota**
-   - Validação simples: `GET /descoberta/pergunta-ativa` continua público; `POST /descoberta/responder` exige sessão.
+### Arquivos previstos
+- `docs/especificacao.md`
 
-3. **Adicionar ação no controlador para salvar resposta**
-   - Validação simples: body sem `idAlternativa` retorna `400`.
+### Objetivo
+Registrar formalmente as regras de questionário dinâmico, resultado por pesos, empate, conclusão, dashboard ampliada, navegação e home com história pessoal autorizada.
 
-4. **Adicionar queries parametrizadas no model**
-   - Validação simples: todas as chamadas ao banco usam placeholders `?` com array de parâmetros.
+### Critérios de aceite
+- Especificação atualizada com regras estáveis e sem contradição com restrições técnicas.
 
-5. **Validar alternativa pertence à pergunta ativa**
-   - Validação simples: enviar alternativa de outra pergunta retorna `400`.
+### Verificação manual
+- Leitura de consistência entre seções de funcionalidade, regras de negócio e critérios de aceite.
 
-6. **Validar resposta repetida sem edição**
-   - Validação simples: segunda tentativa para mesma pergunta retorna `409` e não altera registro existente.
+---
 
-7. **Tratar duplicidade vinda do MySQL no insert**
-   - Validação simples: em cenário de concorrência/falha de duplicidade (`ER_DUP_ENTRY`), retorno também é `409` com a mesma mensagem de já respondida.
+## Etapa 2 — Dados iniciais de 5 perguntas ativas (arquivo SQL separado)
 
-8. **Registrar nova resposta quando válida**
-   - Validação simples: primeira resposta válida retorna `201`.
+### Arquivos previstos
+- `src/database/scriptDadosIniciaisQuestionario5Perguntas.sql` (novo)
 
-9. **Remover avanço para resultado estático na descoberta**
-   - Validação simples: não existe link/botão navegável para `resultado.html` nessa tela durante esta etapa.
+### Objetivo
+Preparar script com 5 perguntas ativas e alternativas vinculadas, com reexecução segura (sem duplicar dados).
 
-10. **Exibir mensagens na interface conforme retorno**
-   - Validação simples: status visual da descoberta muda corretamente para sucesso/erro/sessão/repetição e, no sucesso, informa que o resultado será conectado futuramente.
+### Regras e validações
+1. Não alterar `script-tabelas.sql`.
+2. Não executar SQL automaticamente.
+3. Inserções idempotentes com validação por `WHERE NOT EXISTS` (ou estratégia equivalente por chaves naturais definidas no script).
+4. Manter coerência entre:
+   - `pergunta_filosofica` (enunciado, categoria, ordem_exibicao, ativo);
+   - `alternativa_filosofica` (texto, corrente_filosofica, peso, fk_pergunta).
 
-## 10) Regras e restrições atendidas
-- Uso de sessão do servidor para identificar usuário autenticado.
-- Não confiar em `idUsuario` ou `idPergunta` vindos da interface.
-- Interface envia somente `idAlternativa`.
-- Uma resposta por usuário/pergunta respeitando regra existente do banco.
-- Sem edição de resposta nesta etapa.
-- Duplicidade tratada em duas camadas: verificação prévia + fallback de erro `ER_DUP_ENTRY`.
-- Sem alteração de esquema de banco e sem execução manual de SQL.
-- Sem incluir cálculo de resultado, alteração da tela de resultado ou conexão da dashboard.
+### Critérios de aceite
+- Script pode ser executado manualmente mais de uma vez sem duplicar perguntas e alternativas planejadas.
+- Script documenta, em comentários curtos, a forma de execução manual no MySQL Workbench.
 
-## 11) Dúvidas que impedem seguir as decisões
-No momento, **não há dúvidas impeditivas** para implementação conforme as decisões fornecidas.
+### Verificação manual
+1. Revisar o SQL sem executar.
+2. Confirmar presença de 5 perguntas ativas planejadas no arquivo.
+
+---
+
+## Etapa 3 — Experiência do questionário dinâmico na Descoberta
+
+### Arquivos previstos
+- `public/descoberta.html`
+- `public/js/descoberta.js`
+- `src/routes/descoberta.js`
+- `src/controllers/descobertaController.js`
+- `src/models/descobertaModel.js`
+
+### Objetivo
+Transformar a descoberta de “pergunta ativa única” para “próxima pergunta pendente do usuário”.
+
+### Fluxo proposto
+1. Carregar “próxima pergunta disponível” para o usuário autenticado.
+2. Exibir progresso: `Pergunta X de 5` (ou `X de N` dinâmico pelas ativas).
+3. Salvar resposta.
+4. Exibir ação clara para continuar para próxima pergunta.
+5. Quando não houver pendentes: exibir estado “questionário concluído” e link para resultado.
+6. Reabrindo a página: continuar da próxima pendente.
+
+### Validações de backend
+1. Sessão válida para rotas privadas.
+2. `idAlternativa` obrigatório e válido.
+3. Alternativa pertence à pergunta que está sendo respondida.
+4. Bloqueio de segunda resposta para a mesma pergunta (`409` + mensagem clara).
+
+### Estados de interface
+- carregando;
+- sem sessão;
+- sem perguntas ativas disponíveis;
+- pergunta disponível com progresso;
+- resposta salva;
+- erro de API;
+- questionário concluído.
+
+### Critérios de aceite
+- Usuário autenticado responde perguntas em ordem crescente de exibição.
+- Não consegue responder duas vezes a mesma pergunta.
+- Ao concluir todas as ativas, vê estado concluído sem nova pergunta pendente.
+
+### Verificação manual
+1. Entrar com conta de teste.
+2. Responder uma pergunta e recarregar a página.
+3. Confirmar avanço para a próxima.
+4. Repetir até concluir e validar estado final.
+
+---
+
+## Etapa 4 — Cálculo do resultado final por pesos
+
+### Arquivos previstos
+- `public/resultado.html`
+- `public/js/resultado.js`
+- `src/routes/descoberta.js` (reuso de rota existente ou expansão de payload)
+- `src/controllers/descobertaController.js`
+- `src/models/descobertaModel.js`
+
+### Objetivo
+Exibir resultado final apenas quando o questionário estiver completo.
+
+### Regra de cálculo proposta
+1. Somar `peso` por `corrente_filosofica` considerando respostas do usuário nas perguntas ativas.
+2. Identificar maior soma.
+3. Se apenas uma corrente tiver a maior soma: resultado único.
+4. Se duas ou mais tiverem a mesma maior soma: resultado em empate com lista de correntes empatadas.
+
+### Estados de interface
+- sem sessão;
+- questionário incompleto (informar quantas perguntas faltam);
+- resultado concluído com corrente única;
+- resultado concluído com empate;
+- falha de API.
+
+### Compatibilidade com novas perguntas
+- Se novas perguntas ativas forem adicionadas após conclusão antiga, a tela de resultado deve voltar a mostrar “incompleto” até novas respostas.
+
+### Critérios de aceite
+- Resultado não aparece como concluído antes de 100% das perguntas ativas.
+- Empate é exibido sem desempate inventado.
+
+### Verificação manual
+1. Conta com respostas parciais: validar estado incompleto.
+2. Conta com respostas completas: validar resultado.
+3. Cenário de empate: validar lista de correntes empatadas.
+
+---
+
+## Etapa 5 — Dashboard para múltiplas perguntas
+
+### Arquivos previstos
+- `public/dashboard.html`
+- `public/js/script.js`
+- `src/routes/dashboard.js`
+- `src/controllers/dashboardController.js`
+- `src/models/dashboardModel.js`
+
+### Objetivo
+Ampliar métricas para o cenário de questionário com múltiplas perguntas ativas, mantendo simplicidade didática.
+
+### Métricas propostas
+1. **Total de respostas registradas** (linhas em `resposta_filosofica` dentro das perguntas ativas).
+2. **Total de participantes** (usuários distintos com pelo menos uma resposta nas perguntas ativas).
+3. **Distribuição por corrente filosófica** (contagem por corrente com base nas respostas registradas).
+
+### Regras
+- Usar apenas dados reais da API.
+- Sem conteúdo privado de diário.
+- Se gráfico falhar/indisponível, manter resumo textual e lista textual.
+
+### Estados de interface
+- sem sessão;
+- sem dados;
+- com dados;
+- falha de API;
+- gráfico indisponível com fallback textual.
+
+### Critérios de aceite
+- Dashboard deixa claro o significado de cada métrica.
+- Total de respostas e total de participantes não são tratados como sinônimos.
+
+### Verificação manual
+1. Testar sem sessão (401).
+2. Testar com sessão e base vazia (204 ou equivalente).
+3. Testar com sessão e base populada.
+4. Simular indisponibilidade de Chart.js e validar fallback textual.
+
+---
+
+## Etapa 6 — Navegação consistente entre páginas
+
+### Arquivos previstos
+- `public/index.html`
+- `public/descoberta.html`
+- `public/diario.html`
+- `public/resultado.html`
+- `public/dashboard.html`
+- `public/login.html`
+- `public/cadastro.html`
+- `public/css/global.css`
+- `public/js/script.js` (apenas se necessário para ação de sair em páginas adicionais)
+
+### Objetivo
+Padronizar navegação com destaque de página ativa e ação de saída no fluxo existente.
+
+### Regras
+1. Páginas autenticadas: links para Início, Descoberta, Diário, Resultado, Dashboard e Sair.
+2. Em login/cadastro: manter caminho entre as duas e retorno para Início.
+3. Sair deve reutilizar endpoint e fluxo já existente.
+
+### Critérios de aceite
+- Usuário encontra as páginas principais sem navegação quebrada.
+- Página ativa fica visualmente indicada.
+
+### Verificação manual
+1. Navegar por todos os links.
+2. Validar destaque da página atual.
+3. Validar saída e redirecionamento para login.
+
+---
+
+## Etapa 7 — Página inicial com história pessoal e seção da tatuagem
+
+### Arquivos previstos
+- `public/index.html`
+- `public/css/global.css`
+- `public/assets/img/` (diretório de imagens locais)
+
+### Objetivo
+Atualizar home com narrativa em primeira pessoa, conforme fatos fornecidos, e preparar seção visual da tatuagem sem inventar imagem real ausente.
+
+### Conteúdo autorizado
+- Filosofia nos momentos difíceis;
+- resiliência;
+- não desistir dos sonhos;
+- explicação dos elementos da tatuagem conforme texto fornecido.
+
+### Requisitos de arquivo para foto real da tatuagem (pendente)
+1. Caminho sugerido: `public/assets/img/tatuagem-real.jpg`
+2. Formatos aceitos: `.jpg`, `.jpeg` ou `.png`
+3. Qualidade mínima recomendada: 1200 px no maior lado.
+4. Nome estável (sem acentos/espaços) para facilitar referência no HTML.
+
+### Imagens de apoio (locais)
+Opções simples:
+1. `public/assets/img/ampulheta-caveira-ilustracao.jpg`
+2. `public/assets/img/balanca-coracao-cerebro-ilustracao.jpg`
+3. `public/assets/img/maos-criacao-adao-releitura.jpg`
+
+> As imagens de apoio devem ser locais e didáticas. Não usar URLs remotas como substituição da foto real.
+
+### Critérios de aceite
+- Texto da home respeita os fatos informados, sem criação de eventos não confirmados.
+- Página funciona mesmo antes do envio da foto real (com estado “imagem pendente”).
+
+### Verificação manual
+1. Revisar conteúdo textual.
+2. Validar carregamento das imagens locais.
+3. Validar comportamento quando `tatuagem-real.jpg` ainda não estiver presente.
+
+---
+
+## 5) Ajustes planejados de API/consulta (sem implementação nesta etapa)
+
+### Descoberta
+- Evoluir consulta para obter próxima pergunta pendente do usuário.
+- Informar progresso total e posição atual.
+
+### Resultado
+- Evoluir consulta para agregação por peso e indicação de:
+  - incompleto/concluído;
+  - corrente vencedora ou lista de empate.
+
+### Dashboard
+- Evoluir consulta para retornar:
+  - total de respostas;
+  - total de participantes;
+  - distribuição por corrente.
+
+---
+
+## 6) Riscos e compatibilidade
+
+1. **Respostas antigas de uma pergunta**: ao ativar 5 perguntas, usuários existentes terão progresso parcial.
+2. **Mudança de status de concluído para incompleto**: esperado quando novas perguntas ativas forem adicionadas.
+3. **Interpretação de métricas**: risco de confundir “respostas” com “participantes” se texto não ficar explícito.
+4. **Navegação parcial durante migração**: links podem ficar inconsistentes se a etapa de navegação não for concluída por completo.
+5. **Dependência de mídia local**: ausência da foto real da tatuagem deve ser tratada sem quebrar layout.
+
+---
+
+## 7) Checklist de verificação manual final (após implementação futura)
+
+1. Cadastro/login/sair funcionando no mesmo domínio com cookie de sessão.
+2. Descoberta avança pergunta a pergunta com progresso visível.
+3. Reabertura da descoberta continua da pergunta pendente.
+4. Resultado mostra incompleto antes de terminar e concluído ao final.
+5. Empate no resultado aparece como empate real.
+6. Dashboard mostra respostas, participantes e distribuição com dados reais.
+7. Dashboard mantém texto real se gráfico falhar.
+8. Navegação consistente em todas as páginas.
+9. Home com narrativa pessoal e seção da tatuagem sem inventar fatos.
+
+---
+
+## 8) Limites desta etapa de planejamento
+
+1. Sem execução de SQL.
+2. Sem alteração de schema.
+3. Sem alteração de código da aplicação.
+4. Mudanças desta etapa restritas à documentação (`docs/especificacao.md`, `docs/planoImplementacao.md`, `DiarioDePrompts.md`).

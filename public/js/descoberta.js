@@ -6,11 +6,27 @@ function atualizarStatusDescoberta(mensagem) {
   }
 }
 
+function atualizarProgressoDescoberta(mensagem) {
+  const progresso = document.getElementById("progresso_descoberta");
+
+  if (progresso) {
+    progresso.textContent = mensagem || "";
+  }
+}
+
 function exibirLinkResultadoDescoberta(exibir) {
   const linkResultado = document.getElementById("link_resultado");
 
   if (linkResultado) {
     linkResultado.style.display = exibir ? "inline-block" : "none";
+  }
+}
+
+function exibirBotaoContinuarDescoberta(exibir) {
+  const botaoContinuar = document.getElementById("botao_continuar_descoberta");
+
+  if (botaoContinuar) {
+    botaoContinuar.style.display = exibir ? "block" : "none";
   }
 }
 
@@ -48,6 +64,7 @@ function renderizarAlternativasDescoberta(alternativas) {
     botao.type = "button";
     botao.textContent = alternativas[i].texto;
     botao.dataset.idAlternativa = String(alternativas[i].idAlternativa);
+    botao.setAttribute("aria-pressed", "false");
     botao.addEventListener("click", function () {
       registrarRespostaDescoberta(alternativas[i].idAlternativa);
     });
@@ -69,85 +86,36 @@ function alterarEstadoBotoesAlternativas(desabilitar) {
   });
 }
 
-function destacarAlternativaRegistrada(idAlternativa) {
+function limparDestaqueAlternativasRegistradas() {
   const botoes = obterBotoesAlternativas();
-  let encontrouAlternativa = false;
 
   botoes.forEach(function (botao) {
-    if (Number(botao.dataset.idAlternativa) === Number(idAlternativa)) {
+    botao.classList.remove("resposta-registrada");
+    botao.setAttribute("aria-pressed", "false");
+  });
+}
+
+function destacarAlternativaRegistrada(idAlternativa) {
+  const idAlternativaConvertido = Number(idAlternativa);
+  const botoes = obterBotoesAlternativas();
+
+  botoes.forEach(function (botao) {
+    const idAlternativaBotao = Number(botao.dataset.idAlternativa);
+    const alternativaSelecionada = idAlternativaBotao === idAlternativaConvertido;
+
+    if (alternativaSelecionada) {
       botao.classList.add("resposta-registrada");
-      encontrouAlternativa = true;
+      botao.setAttribute("aria-pressed", "true");
     } else {
       botao.classList.remove("resposta-registrada");
+      botao.setAttribute("aria-pressed", "false");
     }
   });
-
-  return encontrouAlternativa;
 }
 
-function atualizarStatusResultadoDescoberta(mensagem) {
-  const status = document.getElementById("resultado_descoberta_status");
-
-  if (status) {
-    status.textContent = mensagem;
-  }
-}
-
-function ocultarResultadoDescoberta() {
-  const secaoResultado = document.getElementById("resultado_descoberta");
-  const corrente = document.getElementById("corrente_descoberta");
-  const pergunta = document.getElementById("pergunta_descoberta");
-  const alternativa = document.getElementById("alternativa_descoberta");
-  const explicacao = document.getElementById("explicacao_descoberta");
-
-  if (corrente) {
-    corrente.textContent = "";
-  }
-
-  if (pergunta) {
-    pergunta.textContent = "";
-  }
-
-  if (alternativa) {
-    alternativa.textContent = "";
-  }
-
-  if (explicacao) {
-    explicacao.textContent = "";
-  }
-
-  atualizarStatusResultadoDescoberta("Consultando resultado pessoal...");
-
-  if (secaoResultado) {
-    secaoResultado.style.display = "none";
-  }
-}
-
-function exibirResultadoDescoberta(resultado) {
-  const secaoResultado = document.getElementById("resultado_descoberta");
-  const corrente = document.getElementById("corrente_descoberta");
-  const pergunta = document.getElementById("pergunta_descoberta");
-  const alternativa = document.getElementById("alternativa_descoberta");
-  const explicacao = document.getElementById("explicacao_descoberta");
-
-  if (!secaoResultado || !corrente || !pergunta || !alternativa || !explicacao) {
-    atualizarStatusDescoberta("Não foi possível exibir o resultado pessoal nesta página.");
-    return;
-  }
-
-  corrente.textContent = resultado.correnteFilosofica;
-  pergunta.textContent = resultado.enunciadoPergunta;
-  alternativa.textContent = resultado.textoAlternativa;
-  explicacao.textContent =
-    "Nesta etapa, o resultado corresponde à corrente associada à alternativa escolhida na pergunta ativa atual.";
-
-  atualizarStatusResultadoDescoberta("Resultado pessoal carregado com base na sua resposta registrada.");
-  secaoResultado.style.display = "block";
-}
-
-// Requisição assíncrona para buscar o resultado pessoal na própria tela de descoberta.
-function carregarMeuResultadoDescoberta(origemConsulta) {
-  return fetch("/descoberta/meu-resultado", {
+// Requisição assíncrona para carregar a próxima pergunta pendente da sessão autenticada.
+function carregarProximaPerguntaPendenteDescoberta() {
+  fetch("/descoberta/proxima-pergunta", {
     method: "GET",
     credentials: "same-origin",
   })
@@ -157,128 +125,123 @@ function carregarMeuResultadoDescoberta(origemConsulta) {
       }
 
       if (resposta.status === 204) {
-        return { tipo: "semResultado" };
+        return { tipo: "semPerguntaAtiva" };
       }
 
       if (!resposta.ok) {
-        throw new Error("Não foi possível consultar o resultado pessoal.");
+        throw new Error("Não foi possível carregar sua próxima pergunta pendente.");
       }
 
       return resposta.json().then(function (dados) {
-        return { tipo: "comResultado", dados: dados };
+        return { tipo: "comSessao", dados: dados };
       });
     })
-    .then(function (retornoResultado) {
-      if (!retornoResultado) {
+    .then(function (retorno) {
+      if (!retorno) {
         return;
       }
 
-      if (retornoResultado.tipo === "semSessao") {
-        ocultarResultadoDescoberta();
+      if (retorno.tipo === "semSessao") {
+        carregarPerguntaPublicaDescoberta();
+        return;
+      }
+
+      if (retorno.tipo === "semPerguntaAtiva") {
+        limparAlternativas();
+        renderizarPerguntaDescoberta({
+          enunciado: "Nenhuma pergunta ativa disponível no momento.",
+        });
+        atualizarProgressoDescoberta("");
+        atualizarStatusDescoberta("Nenhuma pergunta ativa cadastrada para o questionário.");
+        exibirBotaoContinuarDescoberta(false);
         exibirLinkResultadoDescoberta(false);
-        atualizarStatusDescoberta("Entre na sua conta para visualizar o resultado pessoal.");
         return;
       }
 
-      if (retornoResultado.tipo === "semResultado") {
-        ocultarResultadoDescoberta();
-        atualizarStatusResultadoDescoberta("Você ainda não possui resultado para a pergunta ativa.");
+      const dados = retorno.dados;
 
-        if (origemConsulta === "aposRegistro") {
-          atualizarStatusDescoberta("Resposta registrada, mas ainda não há resultado disponível para a pergunta ativa.");
-        }
+      if (dados.concluido) {
+        limparAlternativas();
+        renderizarPerguntaDescoberta({
+          enunciado: "Questionário concluído.",
+        });
+        atualizarProgressoDescoberta(`Concluído: ${dados.totalRespondidas} de ${dados.totalPerguntasAtivas} perguntas.`);
+        atualizarStatusDescoberta("Você já respondeu todas as perguntas ativas. Acesse seu resultado final.");
+        exibirBotaoContinuarDescoberta(false);
+        exibirLinkResultadoDescoberta(true);
         return;
       }
 
-      exibirResultadoDescoberta(retornoResultado.dados);
-      exibirLinkResultadoDescoberta(true);
+      const pergunta = dados.pergunta;
 
-      if (origemConsulta === "aposRegistro") {
-        atualizarStatusDescoberta("Resposta registrada com sucesso. Seu resultado foi carregado abaixo.");
-      } else {
-        atualizarStatusDescoberta("Você já respondeu esta pergunta. A resposta original foi mantida.");
-      }
+      renderizarPerguntaDescoberta(pergunta);
+      renderizarAlternativasDescoberta(pergunta.alternativas || []);
+      limparDestaqueAlternativasRegistradas();
+      atualizarProgressoDescoberta(
+        `Pergunta ${dados.posicaoAtual} de ${dados.totalPerguntasAtivas} · Respondidas: ${dados.totalRespondidas}`
+      );
+      atualizarStatusDescoberta("Escolha uma alternativa para registrar sua resposta.");
+      exibirBotaoContinuarDescoberta(false);
+      exibirLinkResultadoDescoberta(false);
+      alterarEstadoBotoesAlternativas(false);
     })
     .catch(function (erro) {
-      console.log("Erro ao carregar resultado pessoal na descoberta:", erro);
-      ocultarResultadoDescoberta();
-      atualizarStatusResultadoDescoberta("Falha ao consultar o resultado pessoal no momento.");
-      atualizarStatusDescoberta("Sua resposta foi encontrada, mas não foi possível carregar o resultado agora.");
+      console.log("Erro ao carregar próxima pergunta pendente:", erro);
+      atualizarStatusDescoberta("Falha ao consultar o questionário da sua conta.");
+      atualizarProgressoDescoberta("");
+      exibirBotaoContinuarDescoberta(false);
+      exibirLinkResultadoDescoberta(false);
     });
 }
 
-// Requisição assíncrona para consultar se o usuário logado já respondeu a pergunta ativa.
-function consultarRespostaRegistradaDescoberta() {
-  return fetch("/descoberta/resposta-ativa", {
+// Requisição assíncrona pública para apresentar a pergunta inicial para visitantes sem sessão.
+function carregarPerguntaPublicaDescoberta() {
+  fetch("/descoberta/pergunta-ativa", {
     method: "GET",
-    credentials: "same-origin",
   })
     .then(function (resposta) {
-      if (resposta.status === 401) {
-        return { tipo: "semSessao" };
-      }
-
       if (resposta.status === 204) {
-        return { tipo: "semResposta" };
-      }
-
-      if (!resposta.ok) {
-        throw new Error("Não foi possível consultar a resposta registrada.");
-      }
-
-      return resposta.json().then(function (dados) {
-        return {
-          tipo: "respostaRegistrada",
-          idAlternativa: dados.idAlternativa,
-        };
-      });
-    })
-    .then(function (resultadoConsulta) {
-      if (!resultadoConsulta) {
         return null;
       }
 
-      if (resultadoConsulta.tipo === "semSessao") {
-        exibirLinkResultadoDescoberta(false);
-        alterarEstadoBotoesAlternativas(true);
-        ocultarResultadoDescoberta();
-        atualizarStatusDescoberta("Entre na sua conta para registrar uma resposta.");
-        return resultadoConsulta;
+      if (!resposta.ok) {
+        throw new Error("Falha ao consultar a pergunta pública da descoberta.");
       }
 
-      if (resultadoConsulta.tipo === "semResposta") {
+      return resposta.json();
+    })
+    .then(function (dadosPergunta) {
+      if (!dadosPergunta) {
+        limparAlternativas();
+        renderizarPerguntaDescoberta({
+          enunciado: "Nenhuma pergunta ativa disponível no momento.",
+        });
+        atualizarStatusDescoberta("No momento não há pergunta pública para exibição.");
+        atualizarProgressoDescoberta("");
+        exibirBotaoContinuarDescoberta(false);
         exibirLinkResultadoDescoberta(false);
-        alterarEstadoBotoesAlternativas(false);
-        ocultarResultadoDescoberta();
-        atualizarStatusResultadoDescoberta("Responda a pergunta ativa para visualizar seu resultado aqui.");
-        atualizarStatusDescoberta("Pergunta carregada com sucesso. Escolha uma alternativa para responder.");
-        return resultadoConsulta;
+        return;
       }
 
-      const encontrouAlternativa = destacarAlternativaRegistrada(resultadoConsulta.idAlternativa);
+      renderizarPerguntaDescoberta(dadosPergunta);
+      renderizarAlternativasDescoberta(dadosPergunta.alternativas || []);
+      limparDestaqueAlternativasRegistradas();
       alterarEstadoBotoesAlternativas(true);
-
-      if (encontrouAlternativa) {
-        carregarMeuResultadoDescoberta("respostaExistente");
-      } else {
-        exibirLinkResultadoDescoberta(false);
-        ocultarResultadoDescoberta();
-        atualizarStatusDescoberta("Há uma resposta registrada, mas a alternativa não está disponível nesta pergunta.");
-      }
-
-      return resultadoConsulta;
+      atualizarProgressoDescoberta("Visualização pública da pergunta inicial.");
+      atualizarStatusDescoberta("Entre na sua conta para registrar respostas e avançar no questionário.");
+      exibirBotaoContinuarDescoberta(false);
+      exibirLinkResultadoDescoberta(false);
     })
     .catch(function (erro) {
-      console.log("Erro ao consultar resposta registrada da descoberta:", erro);
-      ocultarResultadoDescoberta();
-      atualizarStatusResultadoDescoberta("Falha ao verificar a resposta registrada.");
-      atualizarStatusDescoberta("Não foi possível verificar sua resposta salva no momento.");
-      alterarEstadoBotoesAlternativas(false);
-      return null;
+      console.log("Erro ao carregar pergunta pública da descoberta:", erro);
+      atualizarStatusDescoberta("Falha ao carregar pergunta pública da descoberta.");
+      atualizarProgressoDescoberta("");
+      exibirBotaoContinuarDescoberta(false);
+      exibirLinkResultadoDescoberta(false);
     });
 }
 
-// Requisição assíncrona para registrar no back-end a alternativa escolhida na descoberta.
+// Requisição assíncrona para registrar no backend a resposta da pergunta pendente do usuário autenticado.
 function registrarRespostaDescoberta(idAlternativa) {
   if (!Number.isInteger(Number(idAlternativa)) || Number(idAlternativa) <= 0) {
     atualizarStatusDescoberta("Dados da resposta inválidos.");
@@ -287,6 +250,7 @@ function registrarRespostaDescoberta(idAlternativa) {
 
   alterarEstadoBotoesAlternativas(true);
   atualizarStatusDescoberta("Registrando resposta...");
+  exibirBotaoContinuarDescoberta(false);
 
   fetch("/descoberta/responder", {
     method: "POST",
@@ -311,28 +275,26 @@ function registrarRespostaDescoberta(idAlternativa) {
       const mensagemServidor = retorno.mensagem || "";
 
       if (retorno.status === 201) {
-        const encontrouAlternativa = destacarAlternativaRegistrada(idAlternativa);
-        alterarEstadoBotoesAlternativas(true);
-
-        if (encontrouAlternativa) {
-          carregarMeuResultadoDescoberta("aposRegistro");
-        } else {
-          exibirLinkResultadoDescoberta(false);
-          ocultarResultadoDescoberta();
-          atualizarStatusDescoberta(
-            "Resposta registrada com sucesso, mas a alternativa não foi localizada na tela atual."
-          );
-        }
+        destacarAlternativaRegistrada(idAlternativa);
+        atualizarStatusDescoberta("Resposta registrada com sucesso. Clique em continuar para carregar a próxima pergunta.");
+        exibirBotaoContinuarDescoberta(true);
         return;
       }
 
       if (retorno.status === 409) {
-        atualizarStatusDescoberta(mensagemServidor || "Você já respondeu esta pergunta.");
-        consultarRespostaRegistradaDescoberta();
+        atualizarStatusDescoberta("Sua resposta já estava registrada. Atualizando o estado atual do questionário...");
+        exibirBotaoContinuarDescoberta(false);
+        carregarProximaPerguntaPendenteDescoberta();
         return;
       }
 
-      if (retorno.status === 401 || retorno.status === 400) {
+      if (retorno.status === 401) {
+        atualizarStatusDescoberta("Sua sessão expirou. Entre novamente para responder.");
+        exibirBotaoContinuarDescoberta(false);
+        return;
+      }
+
+      if (retorno.status === 400) {
         atualizarStatusDescoberta(mensagemServidor || "Não foi possível registrar a resposta.");
         alterarEstadoBotoesAlternativas(false);
         return;
@@ -346,51 +308,27 @@ function registrarRespostaDescoberta(idAlternativa) {
       console.log("Erro ao registrar resposta da descoberta:", erro);
       atualizarStatusDescoberta("Não foi possível registrar a resposta no momento.");
       alterarEstadoBotoesAlternativas(false);
+      exibirBotaoContinuarDescoberta(false);
     });
 }
 
-// Requisição assíncrona para buscar no back-end a pergunta ativa e as alternativas da descoberta.
-function carregarPerguntaAtivaDescoberta() {
-  atualizarStatusDescoberta("Carregando pergunta filosófica...");
-  limparAlternativas();
+function inicializarBotaoContinuarDescoberta() {
+  const botaoContinuar = document.getElementById("botao_continuar_descoberta");
 
-  fetch("/descoberta/pergunta-ativa", {
-    method: "GET",
-  })
-    .then(function (resposta) {
-      if (resposta.status === 204) {
-        return null;
-      }
+  if (!botaoContinuar) {
+    return;
+  }
 
-      if (!resposta.ok) {
-        throw new Error("Falha ao consultar a API de descoberta.");
-      }
-
-      return resposta.json();
-    })
-    .then(function (dadosPergunta) {
-      if (!dadosPergunta) {
-        atualizarStatusDescoberta("Nenhuma pergunta ativa disponível no momento.");
-        return;
-      }
-
-      renderizarPerguntaDescoberta(dadosPergunta);
-
-      if (!dadosPergunta.alternativas || dadosPergunta.alternativas.length === 0) {
-        atualizarStatusDescoberta("Pergunta ativa encontrada, mas sem alternativas cadastradas.");
-        return;
-      }
-
-      renderizarAlternativasDescoberta(dadosPergunta.alternativas);
-      atualizarStatusDescoberta("Pergunta carregada com sucesso.");
-      consultarRespostaRegistradaDescoberta();
-    })
-    .catch(function (erro) {
-      console.log("Erro ao buscar pergunta da descoberta:", erro);
-      atualizarStatusDescoberta("Falha ao consultar a API de descoberta.");
-    });
+  botaoContinuar.addEventListener("click", function () {
+    atualizarStatusDescoberta("Carregando próxima pergunta pendente...");
+    limparAlternativas();
+    exibirBotaoContinuarDescoberta(false);
+    carregarProximaPerguntaPendenteDescoberta();
+  });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  carregarPerguntaAtivaDescoberta();
+  inicializarBotaoContinuarDescoberta();
+  atualizarStatusDescoberta("Carregando pergunta filosófica...");
+  carregarProximaPerguntaPendenteDescoberta();
 });

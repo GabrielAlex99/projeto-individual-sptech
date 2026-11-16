@@ -2,179 +2,198 @@
 
 ## 1. Contexto
 
-O Projeto Filosofia é uma aplicação web acadêmica para apoiar o autoconhecimento por meio de perguntas filosóficas, registro de reflexões pessoais e apresentação de informações agregadas em uma dashboard.
+O Projeto Filosofia é uma aplicação web acadêmica para apoiar o autoconhecimento por meio de perguntas filosóficas, registro de reflexões pessoais e apresentação de informações agregadas em dashboard.
 
-O sistema começou a partir de uma estrutura Web Data Viz. O fluxo atual possui cadastro, login com senha armazenada em formato de hash, sessão no servidor e diário conectado ao MySQL. A descoberta consulta perguntas e alternativas, registra uma resposta por usuário para a pergunta ativa e permite consultar a escolha salva. Nesta etapa, o resultado pessoal corresponde à corrente filosófica associada à alternativa escolhida na pergunta ativa, e a dashboard apresenta a contagem de respostas por corrente para essa pergunta.
-
-Esta especificação reúne objetivos e regras estáveis do projeto. Cada plano de implementação deve atender somente à funcionalidade pedida na tarefa em andamento. A existência de uma funcionalidade nesta especificação não significa que ela já esteja implementada.
+O sistema utiliza HTML, CSS e JavaScript Vanilla no front-end, Node.js com Express no back-end e MySQL como banco relacional. O projeto mantém autenticação por sessão no servidor e separação por camadas (rotas, controladores e modelos).
 
 ## 2. Objetivo
 
-Permitir que uma pessoa crie uma conta, explore perguntas filosóficas, registre respostas e reflexões pessoais, consulte seus próprios registros e compreenda os resultados de forma clara.
-
-A aplicação também deverá apresentar uma dashboard com dados agregados das respostas dos participantes, sem expor o conteúdo privado dos diários.
+Permitir que uma pessoa:
+1. crie uma conta e autentique sessão;
+2. responda um questionário filosófico curto;
+3. consulte seu resultado pessoal com regra explicável;
+4. registre reflexões no diário privado;
+5. acompanhe métricas agregadas em dashboard sem exposição de dados privados.
 
 ## 3. Usuários e acesso
 
-1. Visitante. Pode acessar as páginas públicas e iniciar o fluxo de cadastro ou login.
-2. Usuário autenticado. Pode acessar as funcionalidades associadas à própria conta, incluindo o diário, o registro de respostas e o resultado da pergunta ativa.
+1. **Visitante**: acessa páginas públicas (início, cadastro, login) e navegação pública.
+2. **Usuário autenticado**: acessa descoberta, resultado, dashboard e diário com dados da própria sessão.
 
-O servidor deve identificar o usuário autenticado pela sessão. Para operações privadas, o identificador do usuário deve vir da sessão validada no servidor.
+Toda operação privada deve identificar o usuário por `req.session.usuario.id`.
 
-## 4. Escopo do projeto
+## 4. Escopo
 
-### Dentro do escopo
+### 4.1 Dentro do escopo
 
-1. Página inicial com caminhos claros para cadastro e login.
-2. Cadastro e autenticação de usuários.
-3. Sessão autenticada mantida pelo servidor.
-4. Diário pessoal com criação, consulta e leitura expandida das reflexões do próprio usuário.
-5. Descoberta filosófica com perguntas e alternativas carregadas do MySQL.
-6. Registro da alternativa escolhida por um usuário autenticado.
-7. Exibição de resultado derivado das respostas registradas.
-8. Dashboard com métricas agregadas sobre respostas filosóficas.
+1. Página inicial com contexto do projeto e caminhos de navegação.
+2. Cadastro, login e encerramento de sessão.
+3. Diário privado do usuário autenticado.
+4. Questionário filosófico com perguntas e alternativas vindas do banco.
+5. Resultado pessoal calculado por soma de pesos por corrente filosófica.
+6. Dashboard com métricas agregadas reais de respostas e participantes.
 
-### Fora do escopo atual
+### 4.2 Fora do escopo atual
 
-1. Exposição pública automática das reflexões do diário.
-2. Compartilhamento de reflexões sem ação explícita do autor.
-3. Recomendações geradas por inteligência artificial.
-4. Painel administrativo e sistemas complexos de permissões.
-5. Reativação das rotas antigas de AquaTech, salvo solicitação específica.
+1. Conteúdo de diário público.
+2. Compartilhamento automático de reflexões.
+3. Painel administrativo avançado.
+4. Recomendação por IA.
 
-## 5. Funcionalidades gerais
+## 5. Funcionalidades
 
-### 5.1 Cadastro e login
+### 5.1 Cadastro, login e sessão
 
-1. O visitante pode criar uma conta informando nome, email e senha.
-2. O email de cada conta deve ser único.
-3. A senha deve ser armazenada como hash, nunca em texto puro.
-4. O usuário existente pode entrar pela tela de login.
-5. O usuário pode encerrar a sessão.
-6. Mensagens de erro devem informar o problema sem expor detalhes internos do banco ou credenciais.
+1. Cadastro com nome, email e senha.
+2. Email único por usuário.
+3. Senha armazenada em hash.
+4. Login com criação de sessão.
+5. Saída via fluxo já existente de encerramento de sessão.
 
 ### 5.2 Diário pessoal
 
-1. O usuário autenticado pode registrar uma reflexão com título e conteúdo.
-2. O usuário pode consultar o histórico das próprias reflexões.
-3. Cada registro do histórico deve permitir a leitura do conteúdo completo.
-4. O usuário não pode consultar ou excluir registros pertencentes a outra conta.
-5. O diário permanece privado por padrão.
-6. O usuário autenticado pode excluir apenas as próprias reflexões já registradas.
+1. Usuário autenticado pode criar, listar, abrir e excluir apenas as próprias reflexões.
+2. O diário permanece privado e não participa das métricas públicas.
 
-### 5.3 Descoberta filosófica
+### 5.3 Descoberta (questionário dinâmico)
 
-1. A interface deve carregar uma pergunta ativa e suas alternativas a partir do banco.
-2. A interface deve informar carregamento, ausência de pergunta e falha de comunicação.
-3. A leitura da pergunta ativa e das alternativas é pública e não exige sessão autenticada.
-4. O envio de resposta da descoberta exige sessão autenticada no servidor.
-5. No envio da resposta, a interface deve enviar somente o identificador da alternativa escolhida.
-6. No salvamento da resposta, o servidor deve identificar o usuário pela sessão e validar a alternativa para a pergunta ativa, sem confiar em identificadores de usuário ou pergunta enviados pela interface.
-7. Para a pergunta ativa atual, o resultado pessoal é a corrente filosófica associada à alternativa registrada pelo usuário. Os pesos não são combinados nesta etapa.
-8. Quando houver resposta já registrada para a pergunta ativa, a interface deve permitir consultar e destacar visualmente a alternativa escolhida pelo usuário autenticado.
+1. A descoberta deve trabalhar com **questionário curto de 5 perguntas ativas** nesta etapa de conteúdo inicial.
+2. Regra de disponibilidade: `pergunta_filosofica.ativo = 1` significa pergunta disponível no questionário.
+3. Para usuário autenticado, o servidor deve entregar a pergunta disponível com **menor `ordem_exibicao` ainda não respondida** por esse usuário.
+4. Cada resposta continua única por usuário e pergunta (restrição existente em `resposta_filosofica`).
+5. A interface deve exibir progresso (ex.: `Pergunta 2 de 5`), ação clara para continuar e estado de questionário concluído.
+6. Ao reabrir a descoberta, o usuário deve continuar da próxima pergunta sem resposta.
+7. A leitura da pergunta atual e alternativas pode permanecer pública; gravação de resposta exige sessão válida.
+8. A interface envia apenas `idAlternativa`; usuário e pergunta são resolvidos no backend.
 
 ### 5.4 Resultado filosófico
 
-1. O resultado pessoal da pergunta ativa deve vir da alternativa registrada pelo usuário autenticado.
-2. A tela não deve apresentar uma corrente fixa quando o usuário ainda não tiver resposta registrada para a pergunta ativa.
-3. Caso o questionário passe a ter várias perguntas, a combinação de pesos e o desempate deverão ser definidos antes da ampliação do cálculo.
+1. O resultado final é calculado pela **soma dos pesos** das alternativas respondidas, agrupados por `corrente_filosofica`.
+2. A corrente com maior soma é o resultado.
+3. Em empate na maior soma, o resultado deve exibir **todas as correntes empatadas**, sem desempate artificial.
+4. O resultado só é exibido como **concluído** quando o usuário responder todas as perguntas ativas.
+5. Se houver perguntas ativas pendentes, a tela deve mostrar estado de **questionário incompleto**.
+6. Se novas perguntas forem ativadas após uma conclusão anterior, o usuário volta ao estado de incompleto até responder as novas perguntas.
 
 ### 5.5 Dashboard
 
-1. A dashboard apresenta a quantidade de respostas por corrente filosófica para a pergunta ativa.
-2. Os gráficos devem usar respostas registradas no banco e exibir um estado vazio quando não houver respostas.
-3. A dashboard não deve exibir o conteúdo textual privado dos diários.
-4. Métricas por período e outras agregações permanecem fora desta etapa.
+1. A dashboard deve usar dados reais e separar claramente:
+   - quantidade de respostas registradas;
+   - quantidade de usuários participantes.
+2. A dashboard pode manter visual gráfico e fallback textual.
+3. O texto da métrica deve explicar o que cada número representa.
+4. A dashboard não pode exibir conteúdo privado do diário.
+
+### 5.6 Navegação
+
+1. As páginas autenticadas devem ter navegação consistente para: **Início, Descoberta, Diário, Resultado, Dashboard e Sair**.
+2. A navegação deve indicar a página atual.
+3. Cadastro e login devem manter caminhos claros entre si e retorno para a página inicial.
+
+### 5.7 Página inicial e história pessoal
+
+1. A página inicial pode apresentar narrativa em primeira pessoa com os fatos informados pelo autor, sem inventar eventos.
+2. Texto autorizado nesta etapa:
+   - a filosofia ganhou importância nos momentos mais difíceis;
+   - ajudou a manter resiliência;
+   - ajudou a não desistir dos sonhos.
+3. Deve incluir explicação da tatuagem com os significados fornecidos:
+   - ampulheta dentro da caveira: tempo de vida se esgotando;
+   - “memento mori” acima e “memento vivere” abaixo;
+   - mão com balança, coração e cérebro: equilíbrio entre razão e emoção;
+   - releitura da criação de Adão com duas mãos, sendo a de Adão em esqueleto.
+4. A foto real da tatuagem só pode ser exibida após o arquivo ser adicionado ao projeto.
+5. Imagens de apoio devem ser locais (arquivos do projeto), sem dependência de URL remota.
 
 ## 6. Regras de negócio
 
-RN01. O email de cadastro não pode estar associado a outra conta.
+RN01. Rotas privadas devem validar sessão no servidor.
 
-RN02. Senhas devem ser comparadas e armazenadas por meio do mecanismo de hash existente no projeto.
+RN02. O usuário autenticado é identificado exclusivamente por sessão.
 
-RN03. Rotas privadas devem validar a sessão no servidor.
+RN03. Inserções e consultas com entrada externa devem usar parâmetros SQL.
 
-RN04. As consultas do diário devem limitar os resultados ao usuário identificado pela sessão.
+RN04. O diário é privado e não integra métricas da dashboard.
 
-RN05. O conteúdo do diário é privado e não pode ser usado como dado público da dashboard.
+RN05. Cada usuário responde no máximo uma vez cada pergunta (regra já garantida por restrição existente).
 
-RN06. Respostas filosóficas devem estar vinculadas ao usuário autenticado, à pergunta e a uma alternativa válida.
+RN06. Descoberta deve buscar a pergunta ativa (`ativo = 1`) de menor ordem ainda não respondida pelo usuário.
 
-RN07. A regra do banco prevê no máximo uma resposta por usuário para cada pergunta. Qualquer mudança nessa regra precisa ser especificada antes de alterar o esquema.
+RN07. Resultado final deve somar `peso` das alternativas por corrente filosófica.
 
-RN08. A criação ou exclusão de tabelas e outras alterações estruturais no banco dependem de solicitação explícita. O agente não deve executar comandos SQL no banco por iniciativa própria.
+RN08. Empate no maior valor de soma deve retornar todas as correntes empatadas.
 
-RN09. Na descoberta, a consulta da pergunta ativa e alternativas é pública; a rota de envio de resposta é privada e exige sessão autenticada.
+RN09. Resultado concluído só existe quando todas as perguntas ativas estiverem respondidas pelo usuário.
 
-RN10. No envio da resposta da descoberta, a interface deve informar apenas `idAlternativa`; o servidor deve obter o usuário pela sessão e determinar a pergunta ativa no backend.
+RN10. Ativação de novas perguntas após conclusão anterior torna o questionário novamente incompleto para aquele usuário.
 
-RN11. A exclusão de reflexões do diário deve considerar o usuário da sessão e só pode remover registros pertencentes ao próprio autor.
+RN11. Dashboard deve separar “total de respostas” de “total de participantes”, com definição textual clara.
 
-RN12. A consulta da resposta já registrada na descoberta deve usar sessão autenticada e permitir destaque visual da alternativa salva.
+RN12. Navegação deve manter acesso consistente entre páginas e ação de sair pelo fluxo de sessão já existente.
 
-RN13. Para a pergunta ativa atual, o resultado pessoal corresponde à corrente filosófica da alternativa escolhida pelo usuário autenticado.
-
-RN14. A dashboard deve contar respostas registradas por corrente filosófica para a pergunta ativa, sem consultar ou exibir reflexões do diário.
+RN13. Não executar SQL manualmente como parte do fluxo do agente sem solicitação explícita.
 
 ## 7. Dados tratados
 
-1. Usuário. Nome, email e hash da senha.
-2. Reflexão. Título, conteúdo, data de registro e identificador do autor.
-3. Pergunta filosófica. Enunciado, categoria, ordem de exibição e estado ativo.
-4. Alternativa filosófica. Texto, corrente associada e peso definido no banco.
-5. Resposta filosófica. Usuário, pergunta, alternativa escolhida e data da resposta.
-
-As credenciais de conexão e outros segredos devem permanecer em variáveis de ambiente e não podem ser incluídos em código, relatórios ou logs.
+1. Usuário: nome, email, hash da senha.
+2. Reflexão: título, conteúdo, data e autor.
+3. Pergunta filosófica: enunciado, categoria, ordem, ativo.
+4. Alternativa filosófica: texto, corrente filosófica, peso e pergunta vinculada.
+5. Resposta filosófica: usuário, pergunta, alternativa e data da resposta.
 
 ## 8. Interface e estados
 
-1. A interface deve manter a identidade visual escura e dourada já utilizada no projeto.
-2. As páginas de cadastro e login devem oferecer navegação entre si.
-3. Formulários e consultas devem apresentar mensagens claras de carregamento, sucesso, ausência de dados e erro quando esses estados forem relevantes.
-4. A navegação deve informar ao usuário qual ação está disponível e evitar avançar como se uma resposta tivesse sido registrada quando isso não ocorreu.
-5. Dados escritos pelo usuário devem ser exibidos como texto, sem interpretá-los como marcação HTML.
+1. Identidade visual escura/dourada deve ser preservada.
+2. Estados mínimos do questionário:
+   - carregando;
+   - sem sessão;
+   - sem pergunta disponível;
+   - pergunta disponível com progresso;
+   - resposta salva e pronta para avançar;
+   - questionário concluído.
+3. Estados mínimos do resultado:
+   - sem sessão;
+   - incompleto;
+   - concluído;
+   - falha de API.
+4. Estados mínimos da dashboard:
+   - sem sessão;
+   - sem respostas;
+   - com dados;
+   - falha de API;
+   - gráfico indisponível com fallback textual.
+5. Conteúdo de usuário deve ser exibido como texto (sem interpretar HTML).
 
 ## 9. Padrões técnicos e limites
 
-1. Interface em HTML, CSS e JavaScript sem framework de front end.
-2. Servidor em Node.js com Express e banco MySQL usando mysql2.
-3. Separar interface, rotas, controladores, modelos e configuração do banco conforme a estrutura existente e as orientações de AGENTS.md.
-4. Controladores devem validar entradas e coordenar o fluxo. Modelos devem conter as consultas ao banco.
-5. Consultas que recebem valores externos devem usar parâmetros para prevenir injeção de SQL.
-6. Operações assíncronas e consultas devem tratar erros e retornar respostas compreensíveis.
-7. Comentários curtos devem explicar funções assíncronas e operações de banco quando isso ajudar o entendimento acadêmico.
-8. Usar const por padrão e let somente quando houver reatribuição.
-9. Evitar bibliotecas, abstrações e padrões avançados que não sejam necessários para o curso.
-10. Preservar arquivos existentes, alterações locais e funcionalidades fora da tarefa solicitada.
-11. Não modificar arquivos listados em .gitignore.
-12. Não ler nem modificar arquivos de ambiente durante tarefas que não dependam deles.
+1. Manter HTML, CSS e JavaScript Vanilla no front-end.
+2. Manter Node.js + Express + MySQL no back-end.
+3. Preservar arquitetura por camadas já existente.
+4. Evitar bibliotecas e abstrações desnecessárias para o nível acadêmico.
+5. Não alterar estrutura do banco sem solicitação explícita.
 
 ## 10. Critérios gerais de aceitação
 
-CA01. Um visitante consegue encontrar os caminhos de cadastro e login.
+CA01. Usuário autenticado avança pergunta a pergunta até completar o questionário ativo.
 
-CA02. Uma conta pode ser criada e utilizada para iniciar uma sessão.
+CA02. Ao reabrir a descoberta, usuário continua da próxima pergunta pendente.
 
-CA03. Rotas privadas recusam acesso sem sessão válida.
+CA03. Resultado final só aparece como concluído após 100% das perguntas ativas respondidas.
 
-CA04. Um usuário autenticado consegue criar e consultar somente as próprias reflexões.
+CA04. Empates no resultado são exibidos como empate real, sem desempate inventado.
 
-CA05. O histórico permite ler o conteúdo completo de cada reflexão do usuário autenticado.
+CA05. Dashboard diferencia claramente total de respostas e total de participantes com dados reais.
 
-CA06. A tela de descoberta apresenta a pergunta ativa e suas alternativas cadastradas ou informa claramente quando esses dados não estão disponíveis.
+CA06. Navegação entre páginas é consistente e inclui ação de saída.
 
-CA07. O resultado pessoal e as métricas da dashboard são derivados das respostas armazenadas, sem valores fictícios apresentados como reais.
+CA07. Página inicial pode exibir história pessoal e tatuagem sem inventar fatos e sem usar imagem remota para substituir foto real ausente.
 
-CA08. Nenhuma funcionalidade expõe segredos, hashes de senha ou conteúdo privado do diário.
+## 11. Pendências
 
-## 11. Pendências que precisam de decisão
-
-1. Definir como combinar pesos e resolver empates caso o questionário passe a ter várias perguntas.
-2. Definir métricas adicionais e períodos para a dashboard, se forem necessários.
-3. Definir se haverá compartilhamento voluntário de reflexões em uma área separada. Até essa decisão, os registros permanecem privados.
+1. Receber arquivo real da foto da tatuagem para publicação na página inicial.
+2. Definir o conjunto final das 5 perguntas e textos das alternativas antes da execução manual do script de dados.
+3. Validar manualmente todos os estados com sessão autenticada em navegador.
 
 ## 12. Uso desta especificação
 
-Esta é a referência geral do projeto e deve ser atualizada quando seus objetivos ou regras estáveis mudarem.
-
-Para cada tarefa, o pedido ao OpenCode deve identificar em uma frase a funcionalidade específica a planejar. O plano deve considerar somente aquela tarefa, listar arquivos, fluxo, decisões, impactos e etapas de validação. A implementação deve começar depois da revisão do plano.
+Esta especificação define regras estáveis do projeto. O plano de implementação deve detalhar etapas, arquivos e validações antes da codificação.

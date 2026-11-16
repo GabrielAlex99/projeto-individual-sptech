@@ -9,29 +9,47 @@
 </head>
 
 <body>
+  <header class="barra-navegacao">
+    <div class="marca-navegacao">Projeto Filosofia</div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="descoberta.html">Descoberta</a>
+      <a href="diario.html">Diário</a>
+      <a class="ativo" href="resultado.html">Resultado</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="login.html">Entrar</a>
+      <a href="login.html" class="acao-sair">Sair</a>
+    </nav>
+  </header>
+
   <main class="card">
     <h1 id="corrente_resultado">Carregando seu resultado...</h1>
     <p class="subtitulo" id="status_resultado">Consultando sua resposta registrada...</p>
+    <p class="subtitulo" id="progresso_resultado"></p>
 
     <section id="resultado_conteudo" style="display: none;">
-      <p class="subtitulo">Pergunta respondida</p>
-      <p id="pergunta_resultado"></p>
-      <p class="subtitulo">Alternativa escolhida</p>
-      <p id="alternativa_resultado"></p>
-      <p class="subtitulo">Nesta etapa, o resultado corresponde à corrente associada à alternativa escolhida na pergunta ativa.</p>
+      <p class="subtitulo" id="descricao_resultado"></p>
+      <p id="correntes_empate_resultado" style="display: none;"></p>
+      <p id="explicacao_resultado_metodo"></p>
+      <p id="explicacao_resultado_interpretacao"></p>
+      <p class="subtitulo">Pontuação por corrente nas perguntas ativas respondidas</p>
+      <ul id="ranking_resultado"></ul>
+      <p class="subtitulo resultado-alerta">
+        Resultado educativo: não é diagnóstico, rótulo definitivo nem orientação profissional.
+      </p>
     </section>
 
-    <nav class="subtitulo">
-      <a class="link-secundario" href="descoberta.html">Descoberta</a>
-      &nbsp;•&nbsp;
-      <a class="link-secundario" href="diario.html">Diário</a>
-      &nbsp;•&nbsp;
-      <a class="link-secundario" href="dashboard.html">Dashboard</a>
-      &nbsp;•&nbsp;
-      <a class="link-secundario" href="login.html">Login</a>
-    </nav>
+    <section id="resultado_incompleto_acoes" class="resultado-incompleto-acoes" style="display: none;">
+      <a class="botao-descoberta" href="descoberta.html">Continuar na Descoberta</a>
+    </section>
+
+    <section class="card bloco-significados-correntes">
+      <h2>Significado geral das correntes</h2>
+      <ul id="significados_correntes_resultado"></ul>
+    </section>
   </main>
 
+  <script src="./js/script.js"></script>
   <script src="./js/resultado.js"></script>
 </body>
 

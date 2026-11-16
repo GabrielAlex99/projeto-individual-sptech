@@ -9,11 +9,20 @@
 </head>
 
 <body>
+  <header class="barra-navegacao">
+    <div class="marca-navegacao">Projeto Filosofia</div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a class="ativo" href="cadastro.html">Cadastro</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
   <main class="card">
     <h1>Cadastro</h1>
     <p class="subtitulo">Dê o primeiro passo na sua jornada filosófica.</p>
 
-    <div class="card_erro" id="cardErro">
+    <div class="card_erro" id="cardErro" role="alert" aria-live="assertive">
       <span id="mensagem_erro"></span>
     </div>
 
@@ -28,17 +37,20 @@
     <div class="campo">
       <span>Senha:</span>
       <input id="senha_input" type="password" placeholder="******" />
+      <p id="forca_senha_status" class="senha-feedback" role="status" aria-live="polite">Força da senha: --</p>
     </div>
     <div class="campo">
       <span>Confirmação de Senha:</span>
       <input id="confirmacao_senha_input" type="password" placeholder="******" />
+      <p id="confirmacao_senha_status" class="senha-feedback" role="status" aria-live="polite"></p>
     </div>
 
-    <button class="botao" onclick="cadastrar()">Iniciar Jornada</button>
+    <button id="botao_cadastrar" class="botao" onclick="cadastrar()">Iniciar Jornada</button>
+    <p id="status_formulario_cadastro" class="status-formulario" role="status" aria-live="polite"></p>
 
     <p class="subtitulo">Já tem cadastro? <a class="link-secundario" href="login.html">Ir para login</a></p>
 
-    <div id="div_aguardar" class="loading-div">
+    <div id="div_aguardar" class="loading-div" aria-hidden="true">
       <img src="./assets/circle-loading.gif" id="loading-gif" alt="Carregando" />
     </div>
 

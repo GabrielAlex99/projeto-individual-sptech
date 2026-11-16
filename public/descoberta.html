@@ -9,30 +9,32 @@
 </head>
 
 <body>
+  <header class="barra-navegacao">
+    <div class="marca-navegacao">Projeto Filosofia</div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a class="ativo" href="descoberta.html">Descoberta</a>
+      <a href="diario.html">Diário</a>
+      <a href="resultado.html">Resultado</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="login.html">Entrar</a>
+      <a href="login.html" class="acao-sair">Sair</a>
+    </nav>
+  </header>
+
   <main class="card">
     <h1>Descoberta Filosófica</h1>
-    <nav class="subtitulo">
-      <a class="link-secundario" href="diario.html">Diário</a>
-      &nbsp;•&nbsp;
-      <a class="link-secundario" href="dashboard.html">Dashboard</a>
-    </nav>
     <p id="status_descoberta" class="subtitulo">Carregando pergunta filosófica...</p>
+    <p id="progresso_descoberta" class="subtitulo"></p>
     <p><a id="link_resultado" class="link-secundario" href="resultado.html" style="display: none;">Ver meu resultado</a></p>
 
     <h2 id="enunciado_pergunta">Aguardando pergunta ativa...</h2>
 
     <section id="alternativas_container"></section>
-
-    <section id="resultado_descoberta" class="resultado-descoberta" style="display: none;">
-      <h2>Seu resultado nesta pergunta ativa</h2>
-      <p class="subtitulo" id="resultado_descoberta_status">Consultando resultado pessoal...</p>
-      <p><strong>Corrente:</strong> <span id="corrente_descoberta"></span></p>
-      <p><strong>Pergunta ativa:</strong> <span id="pergunta_descoberta"></span></p>
-      <p><strong>Alternativa escolhida:</strong> <span id="alternativa_descoberta"></span></p>
-      <p id="explicacao_descoberta" class="subtitulo"></p>
-    </section>
+    <button id="botao_continuar_descoberta" class="botao" type="button" style="display: none;">Continuar para a próxima pergunta</button>
   </main>
 
+  <script src="./js/script.js"></script>
   <script src="./js/descoberta.js"></script>
 </body>
 

@@ -8,6 +8,10 @@ router.get("/pergunta-ativa", function (req, res) {
     descobertaController.buscarPerguntaAtiva(req, res);
 });
 
+router.get("/proxima-pergunta", autenticacao.validarSessao, function (req, res) {
+    descobertaController.buscarProximaPerguntaPendente(req, res);
+});
+
 router.get("/resposta-ativa", autenticacao.validarSessao, function (req, res) {
     descobertaController.buscarRespostaAtiva(req, res);
 });

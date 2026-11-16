@@ -11,7 +11,7 @@ body {
   color: #e7e3d5;
 }
 
-/* Estrutura da home */
+/* Navegação principal */
 header {
   width: 100%;
   padding: 24px 8%;
@@ -19,6 +19,46 @@ header {
   letter-spacing: 1px;
   text-transform: uppercase;
   color: #c8c1a8;
+}
+
+.barra-navegacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.marca-navegacao {
+  color: #e7ddc3;
+  font-weight: 700;
+}
+
+.barra-navegacao nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.barra-navegacao nav a {
+  text-decoration: none;
+  color: #d1c9b3;
+  border: 1px solid #2f2f33;
+  border-radius: 6px;
+  padding: 8px 10px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.barra-navegacao nav a:hover,
+.barra-navegacao nav a.ativo {
+  background: #16161a;
+  border-color: #d8b46a;
+  color: #f6f1df;
+}
+
+.barra-navegacao nav a:focus-visible {
+  outline: 2px solid rgba(216, 180, 106, 0.75);
+  outline-offset: 2px;
 }
 
 main {
@@ -70,6 +110,25 @@ body > header + main.home-main {
   color: #c8c1a8;
   line-height: 1.5;
   margin-top: 10px;
+}
+
+.foto-tatuagem-bloco {
+  margin-top: 12px;
+}
+
+.galeria-tatuagem {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.foto-tatuagem-bloco img {
+  display: block;
+  width: 100%;
+  border: 1px solid #2f2f33;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 /* Link secundário reutilizável (login/cadastro) */
@@ -223,6 +282,13 @@ body > .card h1 {
   border-color: #d8b46a;
 }
 
+.campo input:focus-visible,
+.botao:focus-visible,
+.botao-descoberta:focus-visible {
+  outline: 2px solid rgba(216, 180, 106, 0.78);
+  outline-offset: 2px;
+}
+
 .card_erro {
   display: none;
   margin-bottom: 16px;
@@ -241,6 +307,33 @@ body > .card h1 {
 
 .loading-div img {
   width: 38px;
+}
+
+.status-formulario {
+  min-height: 20px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  color: #cdbb92;
+}
+
+.senha-feedback {
+  margin-top: 8px;
+  margin-bottom: 0;
+  color: #b9b2a0;
+  font-size: 0.92rem;
+}
+
+.senha-fraca {
+  color: #ef9a9a;
+}
+
+.senha-media {
+  color: #f1d99f;
+}
+
+.senha-forte,
+.senha-ok {
+  color: #b7dfb7;
 }
 
 /* Botões unificados */
@@ -286,6 +379,12 @@ body > .card h1 {
   box-shadow: 0 14px 28px rgba(216, 180, 106, 0.3);
 }
 
+.botao:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .botao.resposta-registrada {
   border: 2px solid #f0d79b;
   background: linear-gradient(180deg, #3a2e14 0%, #2a210f 100%);
@@ -300,6 +399,11 @@ body > .card h1 {
   opacity: 1;
   cursor: not-allowed;
   box-shadow: 0 0 0 2px rgba(240, 215, 155, 0.28), 0 12px 24px rgba(216, 180, 106, 0.28);
+}
+
+.botao.resposta-registrada:focus-visible {
+  outline: 3px solid rgba(240, 215, 155, 0.85);
+  outline-offset: 2px;
 }
 
 /* Dashboard */
@@ -337,6 +441,11 @@ body > .card h1 {
   color: #d1c9b3;
 }
 
+.aviso-amostra-dashboard {
+  color: #f1d99f !important;
+  margin-top: 8px;
+}
+
 .resumo-metricas-dashboard {
   border: 1px solid #2f2f33;
   border-radius: 8px;
@@ -369,6 +478,36 @@ body > .card h1 {
 
 .resultado-descoberta p:last-child {
   margin-bottom: 0;
+}
+
+.resultado-alerta {
+  margin-top: 12px;
+}
+
+.resultado-incompleto-acoes {
+  margin: 14px 0;
+}
+
+#ranking_resultado,
+#significados_correntes_resultado {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+#ranking_resultado li,
+#significados_correntes_resultado li {
+  border: 1px solid #2f2f33;
+  border-radius: 6px;
+  padding: 10px;
+  background: #121217;
+  color: #d1c9b3;
+}
+
+.bloco-significados-correntes {
+  margin-top: 18px;
 }
 
 /* Diário */
@@ -472,5 +611,19 @@ body > .card h1 {
   .layout-diario,
   .painel {
     grid-template-columns: 1fr;
+  }
+
+  .galeria-tatuagem {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

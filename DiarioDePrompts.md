@@ -332,3 +332,234 @@ Corrigir somente a inicialização da Dashboard para iniciar consulta de métric
   - `public/js/script.js` chama `carregarMetricasDashboard()` somente dentro de `inicializarPaginaDashboard()`.
 - Limitação desta etapa:
   - sem observação direta em navegador nesta execução, a validação visual/autenticada permanece pendente.
+
+## 2026-11-16
+
+### Prompt
+Preparar plano de evolução do projeto para questionário dinâmico de 5 perguntas, resultado por pesos, dashboard ampliada, navegação consistente e atualização da página inicial com história pessoal e seção da tatuagem, sem implementar código nesta etapa.
+
+### Ação realizada
+- Leitura de `AGENTS.md`, `docs/especificacao.md`, `docs/planoImplementacao.md`, `DiarioDePrompts.md` e conferência da implementação atual de descoberta, resultado, dashboard, navegação e página inicial.
+- Atualização de `docs/especificacao.md` com novas regras estáveis:
+  - questionário dinâmico com perguntas ativas (`ativo = 1`);
+  - próxima pergunta por menor ordem ainda não respondida;
+  - resultado por soma de pesos por corrente;
+  - empate sem desempate artificial;
+  - resultado concluído apenas com 100% das perguntas ativas;
+  - retorno ao estado incompleto quando novas perguntas forem ativadas;
+  - dashboard distinguindo respostas registradas e participantes;
+  - navegação consistente e requisitos da home com narrativa pessoal autorizada.
+- Substituição de `docs/planoImplementacao.md` por plano detalhado em etapas dependentes:
+  1. regras da especificação;
+  2. script SQL separado para 5 perguntas e alternativas (idempotente, sem execução);
+  3. experiência do questionário na descoberta;
+  4. cálculo e estados do resultado;
+  5. dashboard com métricas ampliadas;
+  6. navegação unificada;
+  7. página inicial com texto pessoal e seção da tatuagem.
+- Inclusão, no plano, de:
+  - arquivos previstos por etapa;
+  - fluxos, validações e estados de interface;
+  - critérios de aceite e verificação manual;
+  - riscos de compatibilidade com respostas já gravadas e com novas perguntas ativadas depois.
+- Registro explícito da pendência da foto real da tatuagem e dos requisitos de arquivo local para futura inclusão no projeto.
+
+### Validações realizadas
+- Verificação documental de coerência entre especificação atualizada e plano novo.
+- Conferência de aderência ao escopo acadêmico (HTML/CSS/JS Vanilla, Node.js, Express e MySQL) sem propor bibliotecas extras.
+- Limitação desta etapa:
+  - não houve implementação de código, execução de SQL ou validação visual em navegador, conforme solicitado.
+
+## 2026-11-16
+
+### Prompt
+Implementar a etapa central do questionário dinâmico (script de dados iniciais, progressão pergunta a pergunta, resultado por pesos e dashboard adaptada), sem unificar navegação geral e sem nova composição da página inicial nesta etapa.
+
+### Ação realizada
+- Criação do arquivo `src/database/scriptDadosIniciaisQuestionario5Perguntas.sql` com 5 perguntas ativas:
+  - preservação da pergunta e alternativas já existentes;
+  - adição de 4 perguntas novas com alternativas coerentes para Estoicismo, Existencialismo, Utilitarismo e Racionalismo;
+  - peso `1` para todas as alternativas nesta versão;
+  - uso de `WHERE NOT EXISTS` para evitar duplicidade em reexecução;
+  - instruções de execução manual no MySQL Workbench (sem execução automática).
+- Evolução da descoberta no backend (`src/routes/descoberta.js`, `src/controllers/descobertaController.js`, `src/models/descobertaModel.js`):
+  - manutenção de `GET /descoberta/pergunta-ativa` pública (pergunta inicial);
+  - adição de `GET /descoberta/proxima-pergunta` protegida por sessão para retornar próxima pergunta pendente, posição e total de perguntas ativas;
+  - ajuste de `POST /descoberta/responder` para validar alternativa contra a pergunta pendente da sessão e manter resposta única por usuário/pergunta;
+  - manutenção do envio de somente `idAlternativa` pela interface.
+- Evolução da descoberta no front-end (`public/descoberta.html`, `public/js/descoberta.js`):
+  - exibição de progresso (`Pergunta X de N`);
+  - ação explícita para continuar após salvar;
+  - estado de questionário concluído com acesso ao resultado;
+  - retomada na pergunta pendente ao reabrir;
+  - para visitante sem sessão, manutenção da pergunta pública com aviso de login para registrar respostas.
+- Evolução do resultado final (`public/resultado.html`, `public/js/resultado.js`, backend de descoberta):
+  - cálculo por soma de pesos por corrente nas perguntas ativas;
+  - estado incompleto com quantidade de perguntas faltantes;
+  - estado concluído com corrente vencedora;
+  - estado concluído com empate exibindo todas as correntes empatadas;
+  - preservação das respostas já existentes para contagem de progresso/cálculo.
+- Evolução da dashboard (`src/controllers/dashboardController.js`, `src/models/dashboardModel.js`, `public/dashboard.html`, `public/js/script.js`):
+  - métricas considerando todas as perguntas ativas;
+  - separação entre total de respostas e total de participantes distintos (participante = usuário com ao menos uma resposta em perguntas ativas);
+  - manutenção de gráfico com fallback textual real, sem dados simulados e sem conteúdo do diário.
+
+### Validações realizadas
+- Verificação de sintaxe JavaScript:
+  - `node --check src/controllers/descobertaController.js`
+  - `node --check src/models/descobertaModel.js`
+  - `node --check src/controllers/dashboardController.js`
+  - `node --check src/models/dashboardModel.js`
+  - `node --check public/js/descoberta.js`
+  - `node --check public/js/resultado.js`
+  - `node --check public/js/script.js`
+- Testes HTTP sem sessão (com servidor local):
+  - `GET /descoberta/pergunta-ativa` → `200` (mantido público);
+  - `GET /descoberta/proxima-pergunta` → `401` (protegido);
+  - `GET /descoberta/meu-resultado` → `401` (protegido);
+  - `GET /dashboard/metricas` → `401` (protegido).
+- Limitações desta etapa:
+  - sem validação visual autenticada em navegador;
+  - cenários de progresso completo, empate e métricas com dados ampliados dependem de execução manual do novo script SQL e uso de conta descartável para teste.
+
+## 2026-11-16
+
+### Prompt
+Ajustar apenas o totalRespondidas em `GET /descoberta/proxima-pergunta` para usar contagem real e sanitizar erro de `buscarPerguntaAtiva` sem expor detalhes técnicos ao navegador.
+
+### Ação realizada
+- Atualização de `src/controllers/descobertaController.js`:
+  - `buscarProximaPerguntaPendente` passou a calcular `totalRespondidas` via contagem real de perguntas ativas respondidas pelo usuário da sessão (`contarPerguntasAtivasRespondidasDoUsuario`);
+  - manutenção de `posicaoAtual` como posição da pergunta pendente no conjunto ativo;
+  - `buscarPerguntaAtiva` deixou de retornar `sqlMessage`/`erro.message` ao cliente, mantendo log técnico no servidor e mensagem genérica para a interface.
+
+### Validações realizadas
+- Verificação de leitura de código após ajuste no controlador.
+- Limitação desta etapa:
+  - não houve validação visual em navegador nem execução de SQL, conforme solicitado.
+
+## 2026-11-16
+
+### Prompt
+Implementar melhorias de destaque na descoberta, navegação consistente, dashboard ampliada, resultado didático e história pessoal na home, preservando regras atuais e sem alterar banco/schema.
+
+### Ação realizada
+- Atualização de navegação nas páginas `index.html`, `cadastro.html`, `login.html`, `diario.html`, `descoberta.html`, `resultado.html` e `dashboard.html`, com página ativa destacada.
+- Ajuste da ação **Sair** para reutilizar o encerramento de sessão existente via links com classe `acao-sair`, tratados em `public/js/script.js`.
+- Ajuste em `public/js/descoberta.js` para:
+  - aplicar a classe `resposta-registrada` apenas após `201` do backend;
+  - manter botões desabilitados até o usuário clicar em continuar;
+  - em `409`, atualizar o estado da tela via API (`/descoberta/proxima-pergunta`) sem inferir alternativa salva.
+- Ampliação da dashboard em backend (`src/models/dashboardModel.js` e `src/controllers/dashboardController.js`) e frontend (`public/dashboard.html` e `public/js/script.js`) com:
+  - total de respostas;
+  - total de participantes;
+  - total de concluintes;
+  - progresso por pergunta (incluindo zero respostas);
+  - distribuição por corrente;
+  - avisos de amostra pequena e definições simples.
+- Ampliação didática da tela de resultado em `public/resultado.html` e `public/js/resultado.js` com:
+  - explicação do cálculo;
+  - interpretação cuidadosa;
+  - significados gerais das correntes;
+  - link para continuar descoberta no estado incompleto.
+- Expansão da home em `public/index.html` com história pessoal autorizada e bloco preparado para `public/assets/img/tatuagem-real.jpg`, evitando imagem quebrada quando o arquivo não existir.
+- Ajustes visuais em `public/css/global.css` para navegação, blocos novos de resultado/dashboard e acessibilidade do destaque `resposta-registrada`.
+
+### Validações realizadas
+- Verificação de sintaxe JavaScript:
+  - `node --check public/js/descoberta.js`
+  - `node --check public/js/resultado.js`
+  - `node --check public/js/script.js`
+  - `node --check src/models/dashboardModel.js`
+  - `node --check src/controllers/dashboardController.js`
+- Conferência de correspondência entre IDs/links da interface e seletores JS com buscas direcionadas.
+
+### Limitações desta etapa
+- Não houve validação visual/autenticada em navegador nesta execução.
+- Não houve execução de SQL nem alteração de esquema de banco.
+
+## 2026-11-16
+
+### Prompt
+Melhoria pequena e delimitada de UX nas telas Início, Login e Cadastro: corrigir exibição das imagens reais da home, melhorar estados de carregamento/erros em login e cadastro e adicionar indicador visual de força de senha em tempo real.
+
+### Ação realizada
+- Conferência prévia dos arquivos reais em `public/assets/imgs`:
+  - `dantas.ink_09f891c089564312bba6ad85d8864f7b.jpg`
+  - `dantas.ink_5483fc5c8a5f4376bc15b6234de3b8e7.jpg`
+- `public/index.html`:
+  - substituição do caminho antigo (`assets/img/tatuagem-real.jpg`) pelas duas fotos reais da pasta `assets/imgs`;
+  - criação de galeria responsiva com `alt` descritivo alinhado aos símbolos já informados.
+- `public/login.html` e `public/cadastro.html`:
+  - inclusão de áreas de status com `role="status"` e `aria-live="polite"`;
+  - inclusão de `role="alert"` e `aria-live="assertive"` no bloco de mensagens;
+  - adição de IDs nos botões para controle de estado durante envio.
+- `public/js/script.js`:
+  - `exibirErro` passou a usar `textContent` (sem `innerHTML`);
+  - login e cadastro com estado de carregamento, prevenção de envio duplicado e restauração do botão ao finalizar;
+  - login com mensagens claras para campos vazios, conexão e autenticação genérica (`Email ou senha incorretos.`);
+  - cadastro mantendo retorno textual do servidor de forma segura (com filtro de termos técnicos para não expor detalhes internos);
+  - indicador didático em tempo real de força de senha (`fraca`, `média`, `forte`) e feedback de correspondência entre senha e confirmação.
+- `public/css/global.css`:
+  - estilos da galeria de imagens;
+  - estilos de status/formulário e feedback de senha;
+  - foco visível em controles;
+  - ajuste para `prefers-reduced-motion`.
+
+### Validações realizadas
+- Verificação de sintaxe:
+  - `node --check public/js/script.js`
+- Verificação de existência dos arquivos de imagem usados na home:
+  - ambos os caminhos em `public/assets/imgs/...` retornaram `True`.
+- Conferência de correspondência entre IDs HTML e seletores JS (login/cadastro/feedback de senha).
+
+### Limitações desta etapa
+- Não houve validação visual no navegador nesta execução.
+
+## 2026-11-16
+
+### Prompt
+Transferir o plano preparado em `C:\\Users\\User\\.opencode\\plan\\docs_planoQuestionarioEReflexaoDiaria.md` para `docs/planoQuestionarioEReflexaoDiaria.md` e acrescentar registro correspondente no diário, revisando pendências com base no esquema/modelos atuais.
+
+### Ação realizada
+- Leitura dos documentos preparados em `.opencode/plan` e transferência do conteúdo para `docs/planoQuestionarioEReflexaoDiaria.md`.
+- Revisão do plano contra o estado atual do esquema (`script-tabelas.sql`) e dos modelos/consultas de descoberta, resultado, dashboard e diário.
+- Inclusão explícita, como decisões pendentes (sem decidir automaticamente), de:
+  1. recorte da dashboard (todas as tentativas vs. tentativa mais recente por participante);
+  2. persistência da pergunta/resposta da reflexão diária e regra de recuperação no mesmo dia;
+  3. provedor/modelo, limite de uso e texto de consentimento;
+  4. estratégia de preservação e associação das respostas atuais a tentativa histórica na migração futura.
+- Manutenção do plano em etapas pequenas e compatíveis com escopo acadêmico, sem implementação de código/SQL.
+
+### Validações realizadas
+- Verificação documental de aderência ao AGENTS.md e ao estado atual de rotas/controladores/modelos.
+- Conferência de que a atualização ficou restrita a documentos de planejamento e diário.
+
+### Limitações desta etapa
+- Não houve validação visual em navegador.
+- Não houve execução de SQL, criação de migração ou alteração de backend.
+- Não houve execução de SQL nem alteração de backend.
+
+## 2026-11-16
+
+### Prompt
+Corrigir dois pontos no `public/js/script.js`: não aplicar `trim()` na senha do login e não exibir texto bruto do servidor no sucesso do cadastro.
+
+### Ação realizada
+- Ajuste no login:
+  - `senhaVar` passou de `senhaInput.value.trim()` para `senhaInput.value`, preservando exatamente a senha digitada.
+- Ajuste no cadastro bem-sucedido:
+  - remoção do uso de mensagem vinda do servidor no status de sucesso;
+  - exibição de mensagem fixa: `Cadastro realizado com sucesso! Redirecionando para login...`;
+  - manutenção do redirecionamento já existente para `login.html`.
+
+### Validações realizadas
+- Verificação de sintaxe:
+  - `node --check public/js/script.js`
+- Revisão manual no código dos dois fluxos alterados (login e cadastro), confirmando:
+  - email segue com `trim()`;
+  - senha de login não usa `trim()`;
+  - sucesso de cadastro não mostra texto bruto retornado pelo servidor.
+
+### Limitações desta etapa
+- Não houve validação visual no navegador nesta execução.

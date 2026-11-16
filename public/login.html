@@ -9,11 +9,20 @@
 </head>
 
 <body>
+    <header class="barra-navegacao">
+        <div class="marca-navegacao">Projeto Filosofia</div>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="cadastro.html">Cadastro</a>
+            <a class="ativo" href="login.html">Login</a>
+        </nav>
+    </header>
+
     <main class="card">
         <h1>Retorno</h1>
         <p class="citacao">"Saber que nada sabemos é o princípio da sabedoria."</p>
 
-        <div class="card_erro" id="cardErro">
+        <div class="card_erro" id="cardErro" role="alert" aria-live="assertive">
             <span id="mensagem_erro"></span>
         </div>
 
@@ -26,11 +35,12 @@
             <input id="senha_input" type="password" placeholder="******">
         </div>
 
-        <button class="botao" onclick="entrar()">Retomar Reflexão</button>
+        <button id="botao_entrar" class="botao" onclick="entrar()">Retomar Reflexão</button>
+        <p id="status_formulario_login" class="status-formulario" role="status" aria-live="polite"></p>
 
         <p class="subtitulo">Ainda não tem conta? <a class="link-secundario" href="cadastro.html">Ir para cadastro</a></p>
 
-        <div id="div_aguardar" class="loading-div">
+        <div id="div_aguardar" class="loading-div" aria-hidden="true">
             <img src="./assets/circle-loading.gif" id="loading-gif" alt="Carregando">
         </div>
 
