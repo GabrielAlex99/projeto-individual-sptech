@@ -111,3 +111,32 @@ Atualize a especificação geral para refletir a regra de acesso definida no pla
 - Atualização de `docs/especificacao.md` para definir que o envio de resposta exige sessão autenticada, com identificação do usuário no servidor e envio de apenas `idAlternativa` pela interface.
 - Inclusão dessas definições nas regras de negócio da especificação.
 - Remoção da pendência sobre “exigir autenticação antes de interagir ou somente ao salvar resposta”, mantendo as demais pendências.
+
+## 2026-11-15
+
+### Prompt
+Use o modo Build para implementar o registro da resposta na descoberta: nova rota protegida apenas para gravação, validação por sessão/pergunta ativa/alternativa, tratamento de resposta repetida com `409` (incluindo `ER_DUP_ENTRY`), remoção do avanço para resultado estático e registro da implementação no diário de prompts.
+
+### Ação realizada
+- Implementação da rota `POST /descoberta/responder` com proteção por `autenticacao.validarSessao`, mantendo pública a leitura `GET /descoberta/pergunta-ativa`.
+- Implementação no controlador da descoberta para:
+  - identificar o usuário pela sessão;
+  - validar `idAlternativa` enviada pela interface;
+  - localizar pergunta ativa;
+  - validar pertencimento da alternativa à pergunta ativa;
+  - impedir segunda resposta, mantendo a primeira e retornando `409`.
+- Implementação no model com consultas parametrizadas para busca de pergunta ativa, validação de alternativa, verificação de resposta existente e insert da resposta.
+- Tratamento de falha `ER_DUP_ENTRY` como resposta repetida (`409`) com mensagem clara, sem expor detalhes internos do banco ao cliente.
+- Atualização da interface da descoberta para enviar somente `idAlternativa`, tratar os retornos de status e exibir, após sucesso, a mensagem de que o resultado dinâmico será conectado em etapa futura.
+- Remoção do avanço clicável para `resultado.html` em `public/descoberta.html`.
+
+## 2026-11-15
+
+### Prompt
+Preparar apenas os dados iniciais da descoberta em um arquivo SQL separado, com uma pergunta ativa e alternativas vinculadas, evitando duplicidade em reexecução e sem executar comandos no banco.
+
+### Ação realizada
+- Criação do arquivo `src/database/scriptDadosIniciaisDescoberta.sql` com inserção didática de 1 pergunta filosófica ativa e 4 alternativas vinculadas.
+- Uso exclusivo de tabelas e colunas existentes no esquema atual: `pergunta_filosofica` e `alternativa_filosofica`.
+- Estrutura do script com `WHERE NOT EXISTS` para impedir duplicação da pergunta e das alternativas em execuções repetidas.
+- Inclusão de comentários curtos no SQL explicando a ordem dos inserts e como executar manualmente no MySQL Workbench.

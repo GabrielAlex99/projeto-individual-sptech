@@ -1,85 +1,55 @@
--- Script de apoio para criação do esquema da API.
--- Observação: este arquivo documenta a estrutura esperada,
--- mas só terá efeito após execução manual no MySQL.
+-- Cria a base de dados do projeto de filosofia
+CREATE DATABASE IF NOT EXISTS projeto_filosofia;
+USE projeto_filosofia;
 
-/* comandos para mysql server */
-
-CREATE DATABASE aquatech;
-USE aquatech;
-
--- Tabela legada mantida para compatibilidade com rotas existentes.
-CREATE TABLE empresa (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    razao_social VARCHAR(100) NOT NULL,
-    cnpj CHAR(14),
-    codigo_ativacao VARCHAR(50)
+-- Tabela de usuários (integrada com a tela de cadastro e login)
+CREATE TABLE IF NOT EXISTS usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL
 );
 
--- Usuário do sistema (cadastro/login e autor do diário/respostas).
-CREATE TABLE usuario (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nome VARCHAR(80) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    -- Armazena hash seguro da senha (não armazenar texto puro).
-    senha VARCHAR(255) NOT NULL,
-    fk_empresa INT,
-    FOREIGN KEY (fk_empresa) REFERENCES empresa(id)
-);
-
--- Registros do diário filosófico de cada usuário.
-CREATE TABLE diario (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    titulo VARCHAR(150) NOT NULL,
+-- Tabela do diário filosófico (para armazenar as reflexões dos usuários)
+CREATE TABLE IF NOT EXISTS diario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(100) NOT NULL,
     conteudo TEXT NOT NULL,
-    data_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    fk_usuario INT NOT NULL,
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id)
+    data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fk_usuario INT,
+    CONSTRAINT fk_usuario_diario FOREIGN KEY (fk_usuario) REFERENCES usuario(id)
 );
 
--- Perguntas do questionário para descoberta de corrente filosófica.
-CREATE TABLE pergunta_filosofica (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS pergunta_filosofica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     enunciado VARCHAR(300) NOT NULL,
     categoria VARCHAR(60) NOT NULL,
     ordem_exibicao INT NOT NULL,
     ativo TINYINT(1) NOT NULL DEFAULT 1
-);
+) ENGINE=InnoDB;
 
--- Alternativas vinculadas a cada pergunta, com corrente e peso para pontuação.
-CREATE TABLE alternativa_filosofica (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS alternativa_filosofica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     fk_pergunta INT NOT NULL,
     texto VARCHAR(300) NOT NULL,
     corrente_filosofica VARCHAR(80) NOT NULL,
     peso INT NOT NULL,
-    FOREIGN KEY (fk_pergunta) REFERENCES pergunta_filosofica(id)
-);
+    CONSTRAINT fk_alt_fil_pergunta
+        FOREIGN KEY (fk_pergunta) REFERENCES pergunta_filosofica(id)
+) ENGINE=InnoDB;
 
--- Resposta escolhida por usuário para cada pergunta do questionário.
-CREATE TABLE resposta_filosofica (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS resposta_filosofica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     fk_usuario INT NOT NULL,
     fk_pergunta INT NOT NULL,
     fk_alternativa INT NOT NULL,
     data_resposta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_resposta_usuario_pergunta UNIQUE (fk_usuario, fk_pergunta),
-    FOREIGN KEY (fk_usuario) REFERENCES usuario(id),
-    FOREIGN KEY (fk_pergunta) REFERENCES pergunta_filosofica(id),
-    FOREIGN KEY (fk_alternativa) REFERENCES alternativa_filosofica(id)
-);
-
--- Tabelas legadas mantidas temporariamente por compatibilidade.
-CREATE TABLE aquario (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    descricao VARCHAR(300),
-    fk_empresa INT,
-    FOREIGN KEY (fk_empresa) REFERENCES empresa(id)
-);
-
-CREATE TABLE medida (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    temperatura DECIMAL(10,2),
-    momento DATETIME,
-    fk_aquario INT,
-    FOREIGN KEY (fk_aquario) REFERENCES aquario(id)
-);
+    CONSTRAINT uq_resposta_usuario_pergunta
+        UNIQUE (fk_usuario, fk_pergunta),
+    CONSTRAINT fk_resp_fil_usuario
+        FOREIGN KEY (fk_usuario) REFERENCES usuario(id),
+    CONSTRAINT fk_resp_fil_pergunta
+        FOREIGN KEY (fk_pergunta) REFERENCES pergunta_filosofica(id),
+    CONSTRAINT fk_resp_fil_alternativa
+        FOREIGN KEY (fk_alternativa) REFERENCES alternativa_filosofica(id)
+) ENGINE=InnoDB;
