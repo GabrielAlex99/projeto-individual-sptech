@@ -140,3 +140,14 @@ Preparar apenas os dados iniciais da descoberta em um arquivo SQL separado, com 
 - Uso exclusivo de tabelas e colunas existentes no esquema atual: `pergunta_filosofica` e `alternativa_filosofica`.
 - Estrutura do script com `WHERE NOT EXISTS` para impedir duplicação da pergunta e das alternativas em execuções repetidas.
 - Inclusão de comentários curtos no SQL explicando a ordem dos inserts e como executar manualmente no MySQL Workbench.
+
+## 2026-11-15
+
+### Prompt
+Ajustar apenas a navegação entre telas para permitir acesso à descoberta pelos menus do Diário e Dashboard e incluir navegação de volta em `descoberta.html`, sem alterar API, banco, sessão ou regras da descoberta.
+
+### Ação realizada
+- Atualização do menu lateral de `public/diario.html` com novo link para `descoberta.html`.
+- Atualização do menu lateral de `public/dashboard.html` com novo link para `descoberta.html`.
+- Inclusão de navegação simples em `public/descoberta.html` com links para `diario.html` e `dashboard.html`, mantendo coerência visual com os estilos existentes.
+- Nenhum link para `resultado.html` foi adicionado na navegação da descoberta.
