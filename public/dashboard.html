@@ -12,23 +12,31 @@
   <aside class="menu-lateral">
     <h1>Painel Filosófico</h1>
     <nav>
-      <a href="index.html">Início</a>
-      <a href="descoberta.html">Descoberta</a>
-      <a href="diario.html">Diário</a>
-      <a href="resultado.html">Resultado</a>
-      <a class="ativo" href="dashboard.html">Dashboard</a>
-      <a href="login.html">Entrar</a>
-      <a href="login.html" class="acao-sair">Sair</a>
+      <a href="index.html"><img class="icone-nav" src="./assets/imgs/icone-inicio.svg" alt="">Início</a>
+      <a href="descoberta.html"><img class="icone-nav" src="./assets/imgs/icone-descoberta.svg" alt="">Descoberta</a>
+      <a href="diario.html"><img class="icone-nav" src="./assets/imgs/icone-diario.svg" alt="">Diário</a>
+      <a href="resultado.html"><img class="icone-nav" src="./assets/imgs/icone-resultado.svg" alt="">Resultado</a>
+      <a class="ativo" href="dashboard.html"><img class="icone-nav" src="./assets/imgs/icone-dashboard.svg" alt="">Dashboard</a>
+      <a href="login.html"><img class="icone-nav" src="./assets/imgs/icone-login.svg" alt="">Entrar</a>
+      <a href="login.html" class="acao-sair"><img class="icone-nav" src="./assets/imgs/icone-sair.svg" alt="">Sair</a>
     </nav>
   </aside>
 
   <main class="conteudo">
-    <h2 class="titulo">Dashboard</h2>
+    <section class="cabecalho-pagina reveal">
+      <h2 class="titulo">Dashboard</h2>
+      <p class="frase-destaque">Visão coletiva das respostas, preservando a proposta educativa do projeto.</p>
+      <ul class="icones-identidade">
+        <li><img src="./assets/imgs/icone-dashboard.svg" alt="Ícone de dashboard">Panorama coletivo</li>
+        <li><img src="./assets/imgs/icone-balanca.svg" alt="Ícone de análise">Análise agregada</li>
+        <li><img src="./assets/imgs/icone-maos.svg" alt="Ícone de jornada">Jornada em grupo</li>
+      </ul>
+    </section>
     <p class="subtitulo">Métricas reais das respostas registradas no conjunto de perguntas ativas do questionário.</p>
     <p class="subtitulo" id="status_dashboard">Carregando respostas registradas...</p>
 
     <section class="painel">
-      <article class="card">
+      <article class="card reveal">
         <h2>Métricas agregadas do questionário ativo</h2>
         <section id="resumo_metricas_dashboard" class="resumo-metricas-dashboard" style="display: none;">
           <p><strong>Total de respostas:</strong> <span id="total_respostas_dashboard"></span></p>
@@ -47,7 +55,7 @@
         <ul id="metricas_textuais" class="metricas-textuais" style="display: none;"></ul>
       </article>
 
-      <article class="card">
+      <article class="card reveal">
         <h2>Progresso de respostas por pergunta ativa</h2>
         <p class="subtitulo">Cada linha indica quantas respostas foram registradas em cada pergunta, inclusive quando ainda é zero.</p>
         <div class="grafico-container">

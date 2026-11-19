@@ -1167,9 +1167,50 @@ function inicializarPaginaDashboard() {
   });
 }
 
+function inicializarRevelacaoSuave() {
+  const elementosReveal = document.querySelectorAll(".reveal");
+
+  if (!elementosReveal.length) {
+    return;
+  }
+
+  elementosReveal.forEach(function (elemento) {
+    elemento.classList.add("pre-reveal");
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    elementosReveal.forEach(function (elemento) {
+      elemento.classList.add("visivel");
+      elemento.classList.remove("pre-reveal");
+    });
+    return;
+  }
+
+  const observador = new IntersectionObserver(
+    function (entradas) {
+      entradas.forEach(function (entrada) {
+        if (entrada.isIntersecting) {
+          entrada.target.classList.add("visivel");
+          entrada.target.classList.remove("pre-reveal");
+          observador.unobserve(entrada.target);
+        }
+      });
+    },
+    {
+      threshold: 0.12,
+      rootMargin: "0px 0px -20px 0px",
+    }
+  );
+
+  elementosReveal.forEach(function (elemento) {
+    observador.observe(elemento);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   inicializarAcaoSair();
   inicializarFeedbackSenhaCadastro();
   inicializarPaginaDiario();
   inicializarPaginaDashboard();
+  inicializarRevelacaoSuave();
 });

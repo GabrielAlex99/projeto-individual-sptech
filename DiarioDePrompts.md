@@ -516,6 +516,119 @@ Melhoria pequena e delimitada de UX nas telas Início, Login e Cadastro: corrigi
 ### Limitações desta etapa
 - Não houve validação visual no navegador nesta execução.
 
+## 2026-11-18
+
+### Prompt
+Tirar ícones/ilustrações genéricas e atualizar o visual das telas com efeitos/interações e elementos visuais mais alinhados à identidade do site, sem exagero.
+
+### Ação realizada
+- Atualização visual de páginas públicas e internas (`index`, `descoberta`, `diario`, `resultado`, `dashboard`, `login`, `cadastro`) com foco em microinterações e identidade consistente.
+- Inclusão de novos elementos visuais textuais e de layout:
+  - blocos de identidade (`.bloco-identidade`, `.icones-identidade`);
+  - cabeçalhos de contexto por página (`.cabecalho-pagina`, `.frase-destaque`);
+  - variações sutis de hover/foco em cards, botões e imagens.
+- Inclusão de ícones SVG locais temáticos em `public/assets/imgs`:
+  - `icone-ampulheta.svg`, `icone-balanca.svg`, `icone-maos.svg`.
+- Inclusão de animação de revelação suave via JS:
+  - função `inicializarRevelacaoSuave()` em `public/js/script.js`.
+- Ajustes de estilo em `public/css/global.css` para suporte às novas classes e efeitos, mantendo paleta escura/dourada já adotada.
+
+### Validações realizadas
+- Conferência de referências de caminhos em HTML/CSS para os novos ícones.
+- Verificação de presença dos seletores e função JS adicionados.
+- Revisão do diff para confirmar que não houve alteração de regras de negócio, API ou banco.
+
+### Limitações desta etapa
+- Não houve validação visual completa em navegador nesta execução.
+- Alterações concentradas no front-end (HTML/CSS/JS), sem testes autenticados fim a fim.
+
+## 2026-11-18
+
+### Prompt
+Substituir imagens da tatuagem em telas específicas por imagens temáticas e criar identidade visual única com ícones por tela e ícones na navbar.
+
+### Ação realizada
+- Tentativa de geração de imagens realistas via ferramenta de imagem para banners de Home/Descoberta/Diário.
+- A geração automática falhou por credencial inválida no ambiente (`Invalid credential`), sem criação de ativos por esse fluxo.
+- Como fallback local, criação de ícones SVG de navegação e de contexto por tela:
+  - `icone-inicio.svg`, `icone-descoberta.svg`, `icone-diario.svg`, `icone-resultado.svg`, `icone-dashboard.svg`, `icone-login.svg`, `icone-cadastro.svg`.
+- Atualização das navbars/menus laterais das páginas para exibir ícones junto aos rótulos.
+
+### Validações realizadas
+- Conferência com busca por `icone-nav` em todos os HTMLs atualizados.
+- Conferência de existência dos arquivos SVG locais referenciados.
+
+### Limitações desta etapa
+- Como houve falha de credencial da ferramenta externa de imagem, não foi possível gerar artes realistas por IA nesta execução.
+- Não houve validação visual completa em navegador.
+
+## 2026-11-18
+
+### Prompt
+Remover todas as imagens criadas no último ajuste (consideradas genéricas) e diferenciar visualmente os ícones de Entrar e Sair.
+
+### Ação realizada
+- Remoção dos blocos de banner inseridos anteriormente nas páginas.
+- Exclusão dos arquivos de banner:
+  - `public/assets/imgs/banner-home-filosofia.svg`
+  - `public/assets/imgs/banner-descoberta.svg`
+  - `public/assets/imgs/banner-diario.svg`
+  - `public/assets/imgs/banner-dashboard.svg`
+- Criação do ícone específico de saída:
+  - `public/assets/imgs/icone-sair.svg`
+- Troca do ícone de todos os links com classe `acao-sair` para `icone-sair.svg`, mantendo `icone-login.svg` para entradas.
+
+### Validações realizadas
+- Busca em HTML para confirmar ausência de referências `banner-*.svg`.
+- Busca em HTML para confirmar que `acao-sair` não utiliza mais `icone-login.svg`.
+- Conferência de presença de `icone-sair.svg` nas telas com ação de logout.
+
+### Limitações desta etapa
+- Não houve validação visual no navegador nesta execução.
+
+## 2026-11-18
+
+### Prompt
+Aplicar as correções da revisão: evitar risco de conteúdo invisível sem JS e limpar CSS sem uso.
+
+### Ação realizada
+- Correção do comportamento de revelação em `public/css/global.css`:
+  - `.reveal` passou a iniciar visível por padrão;
+  - introdução de `.reveal.pre-reveal` para estado oculto controlado pelo JS;
+  - manutenção de `.reveal.visivel` para estado final.
+- Ajuste em `public/js/script.js` (`inicializarRevelacaoSuave`):
+  - adição programática da classe `pre-reveal` apenas quando JS executa;
+  - remoção de `pre-reveal` ao tornar elemento visível;
+  - fallback sem `IntersectionObserver` mantém elementos visíveis.
+- Limpeza de CSS sem uso após remoção dos banners:
+  - remoção de `.hero-imagem`, `.painel-imagem` e `@keyframes flutuarSuave`.
+
+### Validações realizadas
+- Busca em `global.css` para confirmar remoção de `hero-imagem`, `painel-imagem` e `flutuarSuave`.
+- Leitura do trecho final de `script.js` para validar sequência `pre-reveal` → `visivel`.
+- Revisão de consistência para garantir que conteúdo principal não depende de JS para aparecer.
+
+### Limitações desta etapa
+- Não houve validação visual em navegador nesta execução.
+
+## 2026-11-16
+
+### Prompt
+Adicionar imagens ilustrativas locais para enriquecer a experiência visual das páginas principais, preservando as fotografias reais da tatuagem já existentes.
+
+### Ação realizada
+- Criação de ilustrações vetoriais SVG próprias em `public/assets/imgs` para filosofia, descoberta, diário e equilíbrio entre razão e emoção.
+- Inclusão das ilustrações em `public/index.html`, `public/descoberta.html`, `public/diario.html` e `public/resultado.html`.
+- Inclusão de estilos responsivos para as ilustrações em `public/css/global.css`, mantendo a paleta escura e dourada do projeto.
+- Preservação das fotografias reais da tatuagem e das demais funcionalidades existentes.
+
+### Validações realizadas
+- Conferência de correspondência entre os caminhos das ilustrações e os arquivos criados.
+- Conferência do escopo dos arquivos alterados.
+
+### Limitações desta etapa
+- Não houve validação visual no navegador.
+
 ## 2026-11-16
 
 ### Prompt
