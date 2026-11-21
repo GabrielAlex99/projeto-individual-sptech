@@ -516,6 +516,66 @@ Melhoria pequena e delimitada de UX nas telas Início, Login e Cadastro: corrigi
 ### Limitações desta etapa
 - Não houve validação visual no navegador nesta execução.
 
+## 2026-11-21
+
+### Prompt
+Revisar e corrigir fragilidades pontuais do projeto (validação de entradas em login/diário, limite de título do diário, tratamento async em rotas envolvidas, privacidade de logs do diário e documentação de preparo do questionário), com diagnóstico prévio, testes viáveis no ambiente e sem executar SQL.
+
+### Ação realizada
+- Diagnóstico inicial apresentado antes das alterações, com arquivos-alvo:
+  - `src/controllers/usuarioController.js`
+  - `src/controllers/diarioController.js`
+  - `src/routes/usuarios.js`
+  - `src/routes/diario.js`
+  - `public/diario.html`
+  - `public/js/diario.js`
+  - `src/models/diarioModel.js`
+- Correções implementadas:
+  - `src/controllers/usuarioController.js`:
+    - validação de tipo (`string`) para `emailServer` e `senhaServer` antes de `trim()`/uso;
+    - retorno `400` para formatos inválidos;
+    - preservação de resposta genérica de autenticação (`403`) sem revelar existência de usuário.
+  - `src/controllers/diarioController.js`:
+    - validação de tipo (`string`) para `titulo` e `conteudo` antes de `trim()`;
+    - retorno `400` para formatos inválidos;
+    - validação de limite de título em 100 caracteres com mensagem clara;
+    - manutenção de sessão obrigatória (`401`) e fluxo normal de publicação/exclusão.
+  - `src/routes/usuarios.js` e `src/routes/diario.js`:
+    - adição de wrapper simples `executarAsyncSeguro(...)` para capturar rejeições assíncronas e evitar falha não tratada em Express 4.
+  - `public/diario.html`:
+    - ajuste de `maxlength` do título para `100`.
+  - `public/js/diario.js`:
+    - validação de limite no front com mensagem didática quando ultrapassa 100.
+  - `src/models/diarioModel.js`:
+    - simplificação de log de `publicar()` para não expor título/conteúdo da reflexão.
+  - Documentação criada:
+    - `docs/preparoBancoQuestionario.md` com ordem manual de preparo e indicação de script para 1 pergunta vs. 5 perguntas.
+
+### Validações realizadas
+- Sintaxe:
+  - `node --check app.js`
+  - `node --check src/controllers/usuarioController.js`
+  - `node --check src/controllers/diarioController.js`
+  - `node --check src/routes/usuarios.js`
+  - `node --check src/routes/diario.js`
+  - `node --check src/models/diarioModel.js`
+  - `node --check public/js/diario.js`
+- Testes de comportamento com mocks (sem MySQL real), executando script Node local:
+  - login com `emailServer` não-string → `400`;
+  - login com `senhaServer` não-string → `400`;
+  - login com usuário inexistente → `403` genérico;
+  - login com senha errada → `403` genérico;
+  - login válido → `200` com sessão preenchida;
+  - diário com `titulo` não-string → `400`;
+  - diário com `conteudo` não-string → `400`;
+  - diário com título de 101 chars → `400` com mensagem de limite;
+  - diário com título de 100 chars → `201`.
+
+### Limitações desta etapa
+- Não houve execução de SQL, alteração estrutural de banco ou inserção automática de dados.
+- Não houve validação visual em navegador nesta execução.
+- Os testes HTTP com banco real/sessão real permanecem dependentes do seu ambiente MySQL configurado.
+
 ## 2026-11-20
 
 ### Prompt

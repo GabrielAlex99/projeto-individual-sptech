@@ -3,8 +3,8 @@
   Responsabilidade: regras de cadastro, login e sessão do usuário.
 
   Organização:
-  1) validações básicas;
-  2) hash e verificação de senha;
+  1) validações de entrada;
+  2) hash/verificação de senha;
   3) autenticação;
   4) cadastro;
   5) sessão e logout.
@@ -30,6 +30,11 @@ function senhaValida(senha) {
 // Verifica se a senha já está no formato "scrypt$...".
 function ehHashScrypt(valorSenha) {
   return typeof valorSenha === "string" && valorSenha.startsWith("scrypt$");
+}
+
+// Confere se o valor recebido no corpo da requisição é texto.
+function campoTexto(valor) {
+  return typeof valor === "string";
 }
 
 /*
@@ -89,27 +94,31 @@ async function validarSenhaComMigracao(senhaEmTexto, senhaSalva) {
 /*
   Endpoint: POST /usuarios/autenticar
   Passo a passo:
-  1) valida entrada;
+  1) valida tipo e conteúdo de email/senha;
   2) busca usuário por e-mail;
   3) valida senha;
   4) migra senha legada para hash;
   5) grava dados na sessão.
 */
 async function autenticar(req, res) {
-  const email = req.body.emailServer ? req.body.emailServer.trim().toLowerCase() : "";
-  const senha = req.body.senhaServer ? req.body.senhaServer : "";
+  const emailBruto = req.body?.emailServer;
+  const senhaBruta = req.body?.senhaServer;
 
-  if (!email) {
+  if (!campoTexto(emailBruto) || emailBruto.trim() === "") {
     return res.status(400).send("Informe o email.");
   }
 
-  if (!senha) {
+  if (!campoTexto(senhaBruta) || senhaBruta === "") {
     return res.status(400).send("Informe a senha.");
   }
+
+  const email = emailBruto.trim().toLowerCase();
+  const senha = senhaBruta;
 
   try {
     const resultadoBusca = await usuarioModel.buscarPorEmail(email);
 
+    // Não diferencia usuário inexistente de senha inválida.
     if (resultadoBusca.length !== 1) {
       return res.status(403).send("Email e/ou senha inválido(s)");
     }
@@ -152,19 +161,27 @@ async function autenticar(req, res) {
 /*
   Endpoint: POST /usuarios/cadastrar
   Passo a passo:
-  1) valida campos;
+  1) valida tipo e conteúdo dos campos;
   2) verifica duplicidade de e-mail;
   3) gera hash da senha;
   4) grava usuário no banco.
 */
 async function cadastrar(req, res) {
-  const nome = req.body.nomeServer ? req.body.nomeServer.trim() : "";
-  const email = req.body.emailServer ? req.body.emailServer.trim().toLowerCase() : "";
-  const senha = req.body.senhaServer ? req.body.senhaServer : "";
+  const nomeBruto = req.body?.nomeServer;
+  const emailBruto = req.body?.emailServer;
+  const senhaBruta = req.body?.senhaServer;
 
-  if (!nome) {
+  if (!campoTexto(nomeBruto) || nomeBruto.trim() === "") {
     return res.status(400).send("Informe o nome.");
   }
+
+  if (!campoTexto(emailBruto)) {
+    return res.status(400).send("Informe um email válido.");
+  }
+
+  const nome = nomeBruto.trim();
+  const email = emailBruto.trim().toLowerCase();
+  const senha = campoTexto(senhaBruta) ? senhaBruta : "";
 
   if (!email || !emailValido(email)) {
     return res.status(400).send("Informe um email válido.");

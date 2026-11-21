@@ -10,6 +10,7 @@
 
 // Indica se a sessão já foi validada para liberar ações na tela.
 let sessaoDiarioValidada = false;
+const LIMITE_TITULO_DIARIO = 100;
 
 // Formata data/hora para exibição amigável no histórico.
 function formatarDataDiario(dataRegistro) {
@@ -255,6 +256,11 @@ function publicarReflexao() {
 
   if (!titulo || !conteudo) {
     atualizarStatusDiario("Preencha título e conteúdo para publicar.");
+    return false;
+  }
+
+  if (titulo.length > LIMITE_TITULO_DIARIO) {
+    atualizarStatusDiario(`O título pode ter no máximo ${LIMITE_TITULO_DIARIO} caracteres.`);
     return false;
   }
 

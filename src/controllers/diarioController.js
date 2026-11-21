@@ -10,10 +10,17 @@
 
 const diarioModel = require("../models/diarioModel");
 
+const LIMITE_TITULO_DIARIO = 100;
+
 // Valida IDs numéricos positivos.
 function idValido(idRecebido) {
   const idConvertido = Number(idRecebido);
   return Number.isInteger(idConvertido) && idConvertido > 0;
+}
+
+// Valida se o campo recebido é texto.
+function campoTexto(valor) {
+  return typeof valor === "string";
 }
 
 // Mantém compatibilidade com chamadas antigas que usam "listar".
@@ -43,14 +50,37 @@ async function listarPorUsuario(req, res) {
   }
 }
 
-// Fluxo assíncrono para publicar uma nova reflexão vinculada ao usuário da sessão.
+/*
+  Fluxo assíncrono para publicar nova reflexão.
+  Regras:
+  - título e conteúdo devem ser string;
+  - título e conteúdo não podem ficar vazios após trim;
+  - título deve respeitar limite de 100 caracteres (alinhado ao schema atual).
+*/
 async function publicar(req, res) {
-  const titulo = req.body.titulo ? req.body.titulo.trim() : "";
-  const conteudo = req.body.conteudo ? req.body.conteudo.trim() : "";
+  const tituloBruto = req.body?.titulo;
+  const conteudoBruto = req.body?.conteudo;
   const idUsuarioSessao = req.session?.usuario?.id;
+
+  if (!campoTexto(tituloBruto)) {
+    return res.status(400).send("O título deve ser um texto válido.");
+  }
+
+  if (!campoTexto(conteudoBruto)) {
+    return res.status(400).send("O conteúdo deve ser um texto válido.");
+  }
+
+  const titulo = tituloBruto.trim();
+  const conteudo = conteudoBruto.trim();
 
   if (!titulo) {
     return res.status(400).send("O título é obrigatório.");
+  }
+
+  if (titulo.length > LIMITE_TITULO_DIARIO) {
+    return res
+      .status(400)
+      .send(`O título pode ter no máximo ${LIMITE_TITULO_DIARIO} caracteres.`);
   }
 
   if (!conteudo) {

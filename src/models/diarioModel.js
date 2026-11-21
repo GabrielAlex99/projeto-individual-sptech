@@ -53,7 +53,7 @@ function listarPorUsuario(idUsuario) {
 }
 
 function publicar(titulo, conteudo, idUsuario) {
-    console.log("ACESSEI O DIARIO MODEL \n\n function publicar()", titulo, idUsuario);
+    console.log("ACESSEI O DIARIO MODEL \n\n function publicar() para usuário", idUsuario);
 
     // Query de banco com parâmetros para inserir novo registro de diário.
     const instrucaoSql = `
