@@ -519,6 +519,47 @@ Melhoria pequena e delimitada de UX nas telas Início, Login e Cadastro: corrigi
 ## 2026-11-21
 
 ### Prompt
+Adicionar rodapé minimalista nas sete páginas HTML públicas, com referência às ODS 3 e 4, mantendo identidade visual atual, sem JS para o rodapé, com foco em legibilidade, contraste, foco de teclado, responsividade e respeito ao layout com menu lateral em diário/dashboard.
+
+### Ação realizada
+- Inclusão de rodapé estático e semântico (`<footer>` + `<nav>`) em:
+  - `public/index.html`
+  - `public/login.html`
+  - `public/cadastro.html`
+  - `public/descoberta.html`
+  - `public/resultado.html`
+  - `public/diario.html`
+  - `public/dashboard.html`
+- Conteúdo inserido no rodapé:
+  - frase institucional sobre filosofia/reflexão/autoconhecimento em diálogo com ODS;
+  - links oficiais para ONU Brasil:
+    - ODS 3: `https://brasil.un.org/pt-br/sdgs/3`
+    - ODS 4: `https://brasil.un.org/pt-br/sdgs/4`
+  - texto com foco principal na ODS 3 e papel complementar da ODS 4.
+- Estilização no CSS global (`public/css/global.css`) para:
+  - manter visual escuro e detalhes dourados discretos;
+  - garantir contraste e leitura;
+  - indicar foco visível (`:focus-visible`) nos links do rodapé;
+  - evitar rodapé fixo/sobreposição de conteúdo;
+  - tratar páginas com menu lateral via classe `rodape-projeto-com-menu` (desktop com recuo de 240px; mobile com recuo zerado no `@media`).
+- Ajuste de altura mínima da home com rodapé:
+  - `body > header + main.home-main` atualizado para `min-height: calc(100vh - 210px)`.
+
+### Validações realizadas
+- Verificação automatizada de presença do rodapé e dos dois links ODS nas 7 páginas HTML.
+- Verificação de classe específica para páginas com menu lateral (`diario` e `dashboard`).
+- Verificação de regras CSS de foco visível e responsividade do rodapé.
+- Teste de acesso dos links oficiais com `webfetch`:
+  - ODS 3 retornou conteúdo;
+  - ODS 4 retornou conteúdo.
+
+### Limitações desta etapa
+- Não houve teste visual real em navegador (desktop/mobile) nesta execução.
+- Não foi possível executar navegação por teclado em browser nesta sessão; a verificação foi estrutural (HTML/CSS) e de regras de foco.
+
+## 2026-11-21
+
+### Prompt
 Revisar e corrigir fragilidades pontuais do projeto (validação de entradas em login/diário, limite de título do diário, tratamento async em rotas envolvidas, privacidade de logs do diário e documentação de preparo do questionário), com diagnóstico prévio, testes viáveis no ambiente e sem executar SQL.
 
 ### Ação realizada

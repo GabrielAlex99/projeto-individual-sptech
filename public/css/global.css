@@ -81,9 +81,58 @@ main {
   padding: 32px 8%;
 }
 
+/* Rodapé institucional (ODS) */
+.rodape-projeto {
+  margin-top: 36px;
+  border-top: 1px solid #2f2f33;
+  background: rgba(10, 10, 12, 0.88);
+  padding: 18px 8%;
+}
+
+.rodape-projeto p {
+  color: #c8c1a8;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.rodape-ods-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rodape-ods-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border: 1px solid #3a3528;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: rgba(216, 180, 106, 0.08);
+  color: #e7ddc3;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.rodape-ods-link:hover {
+  background: rgba(216, 180, 106, 0.16);
+  border-color: #d8b46a;
+  color: #f6f1df;
+}
+
+.rodape-ods-link:focus-visible {
+  outline: 2px solid rgba(216, 180, 106, 0.78);
+  outline-offset: 2px;
+  border-color: #d8b46a;
+}
+
+/* Em páginas com menu lateral, o rodapé acompanha a área de conteúdo no desktop */
+.rodape-projeto-com-menu {
+  margin-left: 240px;
+}
+
 /* Home (index) */
 body > header + main.home-main {
-  min-height: calc(100vh - 78px);
+  min-height: calc(100vh - 210px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -759,6 +808,14 @@ body > .card h1 {
   }
 
   .conteudo {
+    margin-left: 0;
+  }
+
+  .rodape-projeto {
+    padding: 16px 22px;
+  }
+
+  .rodape-projeto-com-menu {
     margin-left: 0;
   }
 
