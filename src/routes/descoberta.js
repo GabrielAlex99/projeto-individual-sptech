@@ -1,27 +1,27 @@
-const express = require("express");
-const router = express.Router();
+/*
+  Arquivo: src/routes/descoberta.js
+  Responsabilidade: endpoints do questionário filosófico.
+*/
 
+const express = require("express");
 const descobertaController = require("../controllers/descobertaController");
 const autenticacao = require("../middlewares/autenticacao");
 
-router.get("/pergunta-ativa", function (req, res) {
-    descobertaController.buscarPerguntaAtiva(req, res);
-});
+const router = express.Router();
 
-router.get("/proxima-pergunta", autenticacao.validarSessao, function (req, res) {
-    descobertaController.buscarProximaPerguntaPendente(req, res);
-});
+// Leitura pública da pergunta ativa (visitantes podem visualizar).
+router.get("/pergunta-ativa", descobertaController.buscarPerguntaAtiva);
 
-router.get("/resposta-ativa", autenticacao.validarSessao, function (req, res) {
-    descobertaController.buscarRespostaAtiva(req, res);
-});
+// Busca próxima pergunta pendente (exige sessão).
+router.get("/proxima-pergunta", autenticacao.validarSessao, descobertaController.buscarProximaPerguntaPendente);
 
-router.get("/meu-resultado", autenticacao.validarSessao, function (req, res) {
-    descobertaController.buscarMeuResultado(req, res);
-});
+// Consulta a resposta já registrada da pergunta ativa (exige sessão).
+router.get("/resposta-ativa", autenticacao.validarSessao, descobertaController.buscarRespostaAtiva);
 
-router.post("/responder", autenticacao.validarSessao, function (req, res) {
-    descobertaController.responderPergunta(req, res);
-});
+// Consulta o resultado final do usuário autenticado.
+router.get("/meu-resultado", autenticacao.validarSessao, descobertaController.buscarMeuResultado);
+
+// Registra resposta da pergunta pendente do usuário autenticado.
+router.post("/responder", autenticacao.validarSessao, descobertaController.responderPergunta);
 
 module.exports = router;

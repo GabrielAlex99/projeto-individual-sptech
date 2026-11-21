@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/models/diarioModel.js
+  Responsabilidade: consultas SQL da funcionalidade de diário.
+*/
+
 const database = require("../database/config");
 
 function listar() {

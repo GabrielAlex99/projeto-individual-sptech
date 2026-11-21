@@ -1,48 +1,65 @@
-var medidaModel = require("../models/medidaModel");
+/*
+  Arquivo: src/controllers/medidaController.js
+  Responsabilidade: validar entrada e retornar medições para gráficos.
+  Organização:
+  1) últimas medidas;
+  2) medida em tempo real.
+*/
 
-function buscarUltimasMedidas(req, res) {
+const medidaModel = require("../models/medidaModel");
 
-    const limite_linhas = 7;
-
-    var idAquario = req.params.idAquario;
-
-    console.log(`Recuperando as ultimas ${limite_linhas} medidas`);
-
-    medidaModel.buscarUltimasMedidas(idAquario, limite_linhas).then(function (resultado) {
-        if (resultado.length > 0) {
-            res.status(200).json(resultado);
-        } else {
-            res.status(204).send("Nenhum resultado encontrado!")
-        }
-    }).catch(function (erro) {
-        console.log(erro);
-        console.log("Houve um erro ao buscar as ultimas medidas.", erro.sqlMessage);
-        res.status(500).json(erro.sqlMessage);
-    });
+// Valida IDs numéricos positivos.
+function idValido(idRecebido) {
+  const idConvertido = Number(idRecebido);
+  return Number.isInteger(idConvertido) && idConvertido > 0;
 }
 
+// Fluxo assíncrono para buscar as últimas medidas de um aquário.
+async function buscarUltimasMedidas(req, res) {
+  const limiteLinhas = 7;
+  const idAquario = req.params.idAquario;
 
-function buscarMedidasEmTempoReal(req, res) {
+  if (!idValido(idAquario)) {
+    return res.status(400).send("ID do aquário inválido.");
+  }
 
-    var idAquario = req.params.idAquario;
+  try {
+    const resultado = await medidaModel.buscarUltimasMedidas(idAquario, limiteLinhas);
 
-    console.log(`Recuperando medidas em tempo real`);
+    if (resultado.length > 0) {
+      return res.status(200).json(resultado);
+    }
 
-    medidaModel.buscarMedidasEmTempoReal(idAquario).then(function (resultado) {
-        if (resultado.length > 0) {
-            res.status(200).json(resultado);
-        } else {
-            res.status(204).send("Nenhum resultado encontrado!")
-        }
-    }).catch(function (erro) {
-        console.log(erro);
-        console.log("Houve um erro ao buscar as ultimas medidas.", erro.sqlMessage);
-        res.status(500).json(erro.sqlMessage);
-    });
+    return res.status(204).send("Nenhum resultado encontrado.");
+  } catch (erro) {
+    console.log("Houve um erro ao buscar as últimas medidas:", erro.sqlMessage || erro.message);
+    return res.status(500).send("Não foi possível carregar as últimas medidas no momento.");
+  }
+}
+
+// Fluxo assíncrono para buscar a medida mais recente em tempo real de um aquário.
+async function buscarMedidasEmTempoReal(req, res) {
+  const idAquario = req.params.idAquario;
+
+  if (!idValido(idAquario)) {
+    return res.status(400).send("ID do aquário inválido.");
+  }
+
+  try {
+    const resultado = await medidaModel.buscarMedidasEmTempoReal(idAquario);
+
+    if (resultado.length > 0) {
+      return res.status(200).json(resultado);
+    }
+
+    return res.status(204).send("Nenhum resultado encontrado.");
+  } catch (erro) {
+    console.log("Houve um erro ao buscar medidas em tempo real:", erro.sqlMessage || erro.message);
+    return res.status(500).send("Não foi possível carregar as medidas em tempo real no momento.");
+  }
 }
 
 module.exports = {
-    buscarUltimasMedidas,
-    buscarMedidasEmTempoReal
-
-}
+  buscarUltimasMedidas,
+  buscarMedidasEmTempoReal,
+};

@@ -1,21 +1,24 @@
-const express = require("express");
-const router = express.Router();
+/*
+  Arquivo: src/routes/diario.js
+  Responsabilidade: endpoints do diário filosófico.
+*/
 
+const express = require("express");
 const diarioController = require("../controllers/diarioController");
 const autenticacao = require("../middlewares/autenticacao");
 
+const router = express.Router();
+
+// Protege todas as rotas deste arquivo exigindo sessão válida.
 router.use(autenticacao.validarSessao);
 
-router.get("/listar", function (req, res) {
-    diarioController.listarPorUsuario(req, res);
-});
+// Lista as reflexões do usuário autenticado.
+router.get("/listar", diarioController.listarPorUsuario);
 
-router.post("/publicar", function (req, res) {
-    diarioController.publicar(req, res);
-});
+// Publica uma nova reflexão.
+router.post("/publicar", diarioController.publicar);
 
-router.delete("/deletar/:idDiario", function (req, res) {
-    diarioController.deletar(req, res);
-});
+// Exclui uma reflexão específica do usuário.
+router.delete("/deletar/:idDiario", diarioController.deletar);
 
 module.exports = router;

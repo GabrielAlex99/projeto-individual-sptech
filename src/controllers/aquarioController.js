@@ -1,49 +1,65 @@
-var aquarioModel = require("../models/aquarioModel");
+/*
+  Arquivo: src/controllers/aquarioController.js
+  Responsabilidade: validações de aquário e chamada ao aquarioModel.
+  Organização:
+  1) busca por empresa;
+  2) cadastro.
+*/
 
-function buscarAquariosPorEmpresa(req, res) {
-  var idUsuario = req.params.idUsuario;
+const aquarioModel = require("../models/aquarioModel");
 
-  aquarioModel.buscarAquariosPorEmpresa(idUsuario).then((resultado) => {
-    if (resultado.length > 0) {
-      res.status(200).json(resultado);
-    } else {
-      res.status(204).json([]);
-    }
-  }).catch(function (erro) {
-    console.log(erro);
-    console.log("Houve um erro ao buscar os aquarios: ", erro.sqlMessage);
-    res.status(500).json(erro.sqlMessage);
-  });
+// Valida IDs numéricos positivos.
+function idValido(idRecebido) {
+  const idConvertido = Number(idRecebido);
+  return Number.isInteger(idConvertido) && idConvertido > 0;
 }
 
+// Fluxo assíncrono para listar aquários vinculados a uma empresa.
+async function buscarAquariosPorEmpresa(req, res) {
+  const empresaId = req.params.empresaId;
 
-function cadastrar(req, res) {
-  var descricao = req.body.descricao;
-  var idUsuario = req.body.idUsuario;
+  if (!idValido(empresaId)) {
+    return res.status(400).send("ID da empresa inválido.");
+  }
 
-  if (descricao == undefined) {
-    res.status(400).send("descricao está undefined!");
-  } else if (idUsuario == undefined) {
-    res.status(400).send("idUsuario está undefined!");
-  } else {
+  try {
+    const resultado = await aquarioModel.buscarAquariosPorEmpresa(empresaId);
 
+    if (resultado.length > 0) {
+      return res.status(200).json(resultado);
+    }
 
-    aquarioModel.cadastrar(descricao, idUsuario)
-      .then((resultado) => {
-        res.status(201).json(resultado);
-      }
-      ).catch((erro) => {
-        console.log(erro);
-        console.log(
-          "\nHouve um erro ao realizar o cadastro! Erro: ",
-          erro.sqlMessage
-        );
-        res.status(500).json(erro.sqlMessage);
-      });
+    return res.status(204).json([]);
+  } catch (erro) {
+    console.log("Houve um erro ao buscar aquários:", erro.sqlMessage || erro.message);
+    return res.status(500).send("Não foi possível buscar os aquários no momento.");
+  }
+}
+
+// Fluxo assíncrono para cadastrar aquário.
+async function cadastrar(req, res) {
+  const descricao = req.body.descricao ? req.body.descricao.trim() : "";
+  // Mantém compatibilidade com payload legado ("idUsuario") e atual ("empresaId").
+  const empresaId = req.body.empresaId ?? req.body.idUsuario;
+
+  if (!descricao) {
+    return res.status(400).send("Descrição é obrigatória.");
+  }
+
+  if (!idValido(empresaId)) {
+    return res.status(400).send("ID da empresa inválido.");
+  }
+
+  try {
+    const resultado = await aquarioModel.cadastrar(descricao, empresaId);
+    return res.status(201).json(resultado);
+  } catch (erro) {
+    console.log("Houve um erro ao cadastrar aquário:", erro.sqlMessage || erro.message);
+    return res.status(500).send("Não foi possível cadastrar o aquário no momento.");
   }
 }
 
 module.exports = {
   buscarAquariosPorEmpresa,
-  cadastrar
-}
+  cadastrar,
+};

@@ -1,23 +1,23 @@
-var express = require("express");
-var router = express.Router();
+/*
+  Arquivo: src/routes/empresas.js
+  Responsabilidade: endpoints legados de empresa (base web-data-viz).
+*/
 
-var empresaController = require("../controllers/empresaController");
+const express = require("express");
+const empresaController = require("../controllers/empresaController");
 
-//Recebendo os dados do html e direcionando para a função cadastrar de usuarioController.js
-router.post("/cadastrar", function (req, res) {
-    empresaController.cadastrar(req, res);
-})
+const router = express.Router();
 
-router.get("/buscar", function (req, res) {
-    empresaController.buscarPorCnpj(req, res);
-});
+// Cadastra empresa.
+router.post("/cadastrar", empresaController.cadastrar);
 
-router.get("/buscar/:id", function (req, res) {
-  empresaController.buscarPorId(req, res);
-});
+// Busca empresa por CNPJ (query string).
+router.get("/buscar", empresaController.buscarPorCnpj);
 
-router.get("/listar", function (req, res) {
-  empresaController.listar(req, res);
-});
+// Busca empresa por ID.
+router.get("/buscar/:id", empresaController.buscarPorId);
+
+// Lista empresas.
+router.get("/listar", empresaController.listar);
 
 module.exports = router;

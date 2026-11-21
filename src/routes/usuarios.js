@@ -1,23 +1,23 @@
-const express = require("express");
-const router = express.Router();
+/*
+  Arquivo: src/routes/usuarios.js
+  Responsabilidade: mapear endpoints de autenticação e sessão.
+*/
 
+const express = require("express");
 const usuarioController = require("../controllers/usuarioController");
 
-//Recebendo os dados do html e direcionando para a função cadastrar de usuarioController.js
-router.post("/cadastrar", function (req, res) {
-    usuarioController.cadastrar(req, res);
-});
+const router = express.Router();
 
-router.post("/autenticar", function (req, res) {
-    usuarioController.autenticar(req, res);
-});
+// Cadastro de novo usuário.
+router.post("/cadastrar", usuarioController.cadastrar);
 
-router.get("/sessao", function (req, res) {
-    usuarioController.verificarSessao(req, res);
-});
+// Login do usuário.
+router.post("/autenticar", usuarioController.autenticar);
 
-router.post("/sair", function (req, res) {
-    usuarioController.encerrarSessao(req, res);
-});
+// Validação da sessão atual.
+router.get("/sessao", usuarioController.verificarSessao);
+
+// Encerramento da sessão (logout).
+router.post("/sair", usuarioController.encerrarSessao);
 
 module.exports = router;

@@ -1,3 +1,13 @@
+/*
+  Arquivo: public/js/resultado.js
+  Responsabilidade: carregar e renderizar resultado final da descoberta.
+  Organização:
+  1) status/progresso;
+  2) renderização de blocos de resultado;
+  3) consumo da API de resultado.
+*/
+
+// Atualiza mensagem de status principal da página.
 function atualizarStatusResultado(mensagem) {
   const status = document.getElementById("status_resultado");
 
@@ -6,6 +16,7 @@ function atualizarStatusResultado(mensagem) {
   }
 }
 
+// Atualiza texto de progresso do questionário na página de resultado.
 function atualizarProgressoResultado(mensagem) {
   const progresso = document.getElementById("progresso_resultado");
 
@@ -14,6 +25,7 @@ function atualizarProgressoResultado(mensagem) {
   }
 }
 
+// Exibe ou oculta bloco de ações quando questionário está incompleto.
 function exibirAcoesIncompleto(exibir) {
   const blocoAcoes = document.getElementById("resultado_incompleto_acoes");
 
@@ -22,6 +34,7 @@ function exibirAcoesIncompleto(exibir) {
   }
 }
 
+// Retorna texto didático da corrente filosófica para exibição na tela.
 function obterDescricaoCorrente(correnteFilosofica) {
   const descricoes = {
     Estoicismo: "Valoriza autocontrole, serenidade e foco no que depende de você.",
@@ -33,6 +46,7 @@ function obterDescricaoCorrente(correnteFilosofica) {
   return descricoes[correnteFilosofica] || "Corrente filosófica presente no questionário atual.";
 }
 
+// Renderiza lista fixa de significados gerais das correntes.
 function renderizarSignificadosCorrentes() {
   const listaSignificados = document.getElementById("significados_correntes_resultado");
 
@@ -50,6 +64,7 @@ function renderizarSignificadosCorrentes() {
   });
 }
 
+// Renderiza ranking com pontuação por corrente retornada pela API.
 function renderizarRankingResultado(pontuacoesPorCorrente) {
   const ranking = document.getElementById("ranking_resultado");
 
@@ -70,6 +85,7 @@ function renderizarRankingResultado(pontuacoesPorCorrente) {
   });
 }
 
+// Renderiza estado concluído do resultado (único ou empate).
 function exibirResultadoConcluido(resultado) {
   const titulo = document.getElementById("corrente_resultado");
   const conteudo = document.getElementById("resultado_conteudo");
@@ -109,6 +125,7 @@ function exibirResultadoConcluido(resultado) {
   atualizarStatusResultado("Resultado calculado de forma educativa com base nas suas respostas registradas.");
 }
 
+// Renderiza estado incompleto com orientação para continuar na descoberta.
 function exibirResultadoIncompleto(resultado) {
   const titulo = document.getElementById("corrente_resultado");
   const conteudo = document.getElementById("resultado_conteudo");
@@ -128,7 +145,10 @@ function exibirResultadoIncompleto(resultado) {
   atualizarStatusResultado(`Ainda faltam ${resultado.faltam} pergunta(s) para concluir o resultado final.`);
 }
 
-// Requisição assíncrona para carregar o resultado pessoal da sessão atual.
+/*
+  Requisição assíncrona para carregar o resultado pessoal da sessão atual.
+  Endpoint: GET /descoberta/meu-resultado
+*/
 function carregarMeuResultado() {
   fetch("/descoberta/meu-resultado", {
     method: "GET",
@@ -178,6 +198,7 @@ function carregarMeuResultado() {
     });
 }
 
+// Ponto de entrada da tela de resultado.
 document.addEventListener("DOMContentLoaded", function () {
   renderizarSignificadosCorrentes();
   carregarMeuResultado();

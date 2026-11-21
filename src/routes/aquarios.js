@@ -1,14 +1,17 @@
-var express = require("express");
-var router = express.Router();
+/*
+  Arquivo: src/routes/aquarios.js
+  Responsabilidade: endpoints legados de aquário (base web-data-viz).
+*/
 
-var aquarioController = require("../controllers/aquarioController");
+const express = require("express");
+const aquarioController = require("../controllers/aquarioController");
 
-router.get("/:empresaId", function (req, res) {
-  aquarioController.buscarAquariosPorEmpresa(req, res);
-});
+const router = express.Router();
 
-router.post("/cadastrar", function (req, res) {
-  aquarioController.cadastrar(req, res);
-})
+// Lista aquários da empresa informada.
+router.get("/:empresaId", aquarioController.buscarAquariosPorEmpresa);
+
+// Cadastra novo aquário.
+router.post("/cadastrar", aquarioController.cadastrar);
 
 module.exports = router;

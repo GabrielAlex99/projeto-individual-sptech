@@ -1,27 +1,55 @@
-var database = require("../database/config");
+/*
+  Arquivo: src/models/empresaModel.js
+  Responsabilidade: consultas SQL do recurso empresa (legado web-data-viz).
+*/
+
+const database = require("../database/config");
 
 function buscarPorId(id) {
-  var instrucaoSql = `SELECT * FROM empresa WHERE id = '${id}'`;
+  // Query de banco para buscar empresa por id.
+  const instrucaoSql = `
+    SELECT id, razao_social, cnpj, codigo_ativacao
+    FROM empresa
+    WHERE id = ?;
+  `;
 
-  return database.executar(instrucaoSql);
+  return database.executar(instrucaoSql, [id]);
 }
 
 function listar() {
-  var instrucaoSql = `SELECT id, razao_social, cnpj, codigo_ativacao FROM empresa`;
+  // Query de banco para listar empresas.
+  const instrucaoSql = `
+    SELECT id, razao_social, cnpj, codigo_ativacao
+    FROM empresa;
+  `;
 
   return database.executar(instrucaoSql);
 }
 
 function buscarPorCnpj(cnpj) {
-  var instrucaoSql = `SELECT * FROM empresa WHERE cnpj = '${cnpj}'`;
+  // Query de banco para buscar empresa por CNPJ.
+  const instrucaoSql = `
+    SELECT id, razao_social, cnpj, codigo_ativacao
+    FROM empresa
+    WHERE cnpj = ?;
+  `;
 
-  return database.executar(instrucaoSql);
+  return database.executar(instrucaoSql, [cnpj]);
 }
 
 function cadastrar(razaoSocial, cnpj) {
-  var instrucaoSql = `INSERT INTO empresa (razao_social, cnpj) VALUES ('${razaoSocial}', '${cnpj}')`;
+  // Query de banco para cadastrar empresa de forma parametrizada.
+  const instrucaoSql = `
+    INSERT INTO empresa (razao_social, cnpj)
+    VALUES (?, ?);
+  `;
 
-  return database.executar(instrucaoSql);
+  return database.executar(instrucaoSql, [razaoSocial, cnpj]);
 }
 
-module.exports = { buscarPorCnpj, buscarPorId, cadastrar, listar };
+module.exports = {
+  buscarPorCnpj,
+  buscarPorId,
+  cadastrar,
+  listar,
+};

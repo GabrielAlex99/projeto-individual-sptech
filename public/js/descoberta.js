@@ -1,3 +1,14 @@
+/*
+  Arquivo: public/js/descoberta.js
+  Responsabilidade: fluxo da tela de descoberta (questionário filosófico).
+  Organização:
+  1) utilitários de tela (status, progresso, exibição de botões/links);
+  2) renderização de pergunta e alternativas;
+  3) chamadas de API (buscar pergunta e registrar resposta);
+  4) inicialização da interação de continuidade.
+*/
+
+// Atualiza mensagem de status principal da descoberta.
 function atualizarStatusDescoberta(mensagem) {
   const status = document.getElementById("status_descoberta");
 
@@ -6,6 +17,7 @@ function atualizarStatusDescoberta(mensagem) {
   }
 }
 
+// Atualiza texto de progresso (ex.: pergunta X de N).
 function atualizarProgressoDescoberta(mensagem) {
   const progresso = document.getElementById("progresso_descoberta");
 
@@ -14,6 +26,7 @@ function atualizarProgressoDescoberta(mensagem) {
   }
 }
 
+// Exibe ou oculta o link para a página de resultado.
 function exibirLinkResultadoDescoberta(exibir) {
   const linkResultado = document.getElementById("link_resultado");
 
@@ -22,6 +35,7 @@ function exibirLinkResultadoDescoberta(exibir) {
   }
 }
 
+// Exibe ou oculta o botão de continuar para próxima pergunta.
 function exibirBotaoContinuarDescoberta(exibir) {
   const botaoContinuar = document.getElementById("botao_continuar_descoberta");
 
@@ -30,6 +44,7 @@ function exibirBotaoContinuarDescoberta(exibir) {
   }
 }
 
+// Limpa alternativas renderizadas na tela.
 function limparAlternativas() {
   const container = document.getElementById("alternativas_container");
 
@@ -38,6 +53,7 @@ function limparAlternativas() {
   }
 }
 
+// Renderiza o enunciado da pergunta.
 function renderizarPerguntaDescoberta(pergunta) {
   const enunciado = document.getElementById("enunciado_pergunta");
 
@@ -46,6 +62,7 @@ function renderizarPerguntaDescoberta(pergunta) {
   }
 }
 
+// Renderiza botões das alternativas e conecta cada clique ao registro da resposta.
 function renderizarAlternativasDescoberta(alternativas) {
   const container = document.getElementById("alternativas_container");
 
@@ -74,10 +91,12 @@ function renderizarAlternativasDescoberta(alternativas) {
   }
 }
 
+// Retorna todos os botões de alternativa renderizados.
 function obterBotoesAlternativas() {
   return document.querySelectorAll("#alternativas_container button");
 }
 
+// Habilita/desabilita todos os botões de alternativa.
 function alterarEstadoBotoesAlternativas(desabilitar) {
   const botoes = obterBotoesAlternativas();
 
@@ -86,6 +105,7 @@ function alterarEstadoBotoesAlternativas(desabilitar) {
   });
 }
 
+// Remove destaque visual de resposta registrada.
 function limparDestaqueAlternativasRegistradas() {
   const botoes = obterBotoesAlternativas();
 
@@ -95,6 +115,7 @@ function limparDestaqueAlternativasRegistradas() {
   });
 }
 
+// Destaca alternativa já registrada para o usuário.
 function destacarAlternativaRegistrada(idAlternativa) {
   const idAlternativaConvertido = Number(idAlternativa);
   const botoes = obterBotoesAlternativas();
@@ -113,7 +134,14 @@ function destacarAlternativaRegistrada(idAlternativa) {
   });
 }
 
-// Requisição assíncrona para carregar a próxima pergunta pendente da sessão autenticada.
+/*
+  Requisição assíncrona para carregar a próxima pergunta pendente da sessão autenticada.
+  Endpoint: GET /descoberta/proxima-pergunta
+  Resultado esperado:
+  - pergunta pendente com progresso, ou
+  - estado concluído, ou
+  - fallback para pergunta pública sem sessão.
+*/
 function carregarProximaPerguntaPendenteDescoberta() {
   fetch("/descoberta/proxima-pergunta", {
     method: "GET",
@@ -194,7 +222,10 @@ function carregarProximaPerguntaPendenteDescoberta() {
     });
 }
 
-// Requisição assíncrona pública para apresentar a pergunta inicial para visitantes sem sessão.
+/*
+  Requisição assíncrona pública para apresentar a pergunta inicial para visitantes sem sessão.
+  Endpoint: GET /descoberta/pergunta-ativa
+*/
 function carregarPerguntaPublicaDescoberta() {
   fetch("/descoberta/pergunta-ativa", {
     method: "GET",
@@ -241,7 +272,13 @@ function carregarPerguntaPublicaDescoberta() {
     });
 }
 
-// Requisição assíncrona para registrar no backend a resposta da pergunta pendente do usuário autenticado.
+/*
+  Requisição assíncrona para registrar no backend a resposta do usuário autenticado.
+  Endpoint: POST /descoberta/responder
+  Observação didática:
+  - o front envia apenas idAlternativa;
+  - o backend resolve usuário da sessão e pergunta pendente.
+*/
 function registrarRespostaDescoberta(idAlternativa) {
   if (!Number.isInteger(Number(idAlternativa)) || Number(idAlternativa) <= 0) {
     atualizarStatusDescoberta("Dados da resposta inválidos.");
@@ -312,6 +349,7 @@ function registrarRespostaDescoberta(idAlternativa) {
     });
 }
 
+// Fluxo do botão "Continuar" para carregar a próxima pergunta pendente.
 function inicializarBotaoContinuarDescoberta() {
   const botaoContinuar = document.getElementById("botao_continuar_descoberta");
 
@@ -327,6 +365,7 @@ function inicializarBotaoContinuarDescoberta() {
   });
 }
 
+// Ponto de entrada da tela de descoberta.
 document.addEventListener("DOMContentLoaded", function () {
   inicializarBotaoContinuarDescoberta();
   atualizarStatusDescoberta("Carregando pergunta filosófica...");

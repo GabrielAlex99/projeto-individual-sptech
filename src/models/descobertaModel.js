@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/models/descobertaModel.js
+  Responsabilidade: consultas SQL do questionário e resultado filosófico.
+*/
+
 const database = require("../database/config");
 
 function buscarPerguntaAtivaComAlternativas() {
@@ -82,7 +87,8 @@ function buscarProximaPerguntaPendenteComAlternativas(idUsuario) {
 function buscarPerguntaAtiva() {
     console.log("ACESSEI O DESCOBERTA MODEL \n\n function buscarPerguntaAtiva()");
 
-    // Query de banco para buscar apenas o identificador da pergunta ativa.
+    // Query de banco para buscar apenas o identificador da primeira pergunta ativa.
+    // (mantida por compatibilidade com fluxos legados)
     const instrucaoSql = `
         SELECT
             p.id AS idPergunta

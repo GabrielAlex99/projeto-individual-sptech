@@ -516,6 +516,136 @@ Melhoria pequena e delimitada de UX nas telas Início, Login e Cadastro: corrigi
 ### Limitações desta etapa
 - Não houve validação visual no navegador nesta execução.
 
+## 2026-11-20
+
+### Prompt
+Realizar auditoria completa do projeto com base no PDF de Pesquisa e Inovação e na referência web-data-viz, refatorando blocos complexos sem sair do escopo acadêmico e gerando material didático em PDF para estudo da API e dos arquivos JS.
+
+### Ação realizada
+- Auditoria estrutural completa dos diretórios e arquivos do projeto, comparando escopo acadêmico, arquitetura web-data-viz e regras definidas em `AGENTS.md`.
+- Refatoração front-end para simplificar organização dos scripts:
+  - `public/js/script.js` passou a conter apenas utilitários compartilhados (erro, logout e efeitos visuais);
+  - criação de `public/js/auth.js` (login/cadastro);
+  - criação de `public/js/diario.js` (fluxo do diário);
+  - criação de `public/js/dashboard.js` (métricas e gráficos).
+- Atualização das páginas HTML para carregar somente os scripts necessários por tela:
+  - `login.html` e `cadastro.html` agora incluem `auth.js`;
+  - `diario.html` inclui `diario.js`;
+  - `dashboard.html` inclui `dashboard.js`.
+- Refatoração do backend para reduzir complexidade e aumentar clareza:
+  - padronização de rotas para uso direto dos métodos dos controllers;
+  - `app.js` simplificado com `const`, validação de `SESSION_SECRET` e organização de middlewares/rotas;
+  - controllers de diário, dashboard, aquário, empresa e medida migrados para `async/await` com `try/catch` e mensagens claras;
+  - modelos legados (`aquarioModel`, `empresaModel`, `medidaModel`) ajustados para queries parametrizadas;
+  - correção de query inválida em cadastro de aquário;
+  - `src/database/config.js` simplificado com validação de ambiente e execução de query parametrizada.
+- Limpeza do script de schema:
+  - `src/database/script-tabelas.sql` mantido apenas com criação das tabelas;
+  - dados iniciais permanecem nos arquivos separados de seed (`scriptDadosIniciais*.sql`).
+
+### Validações realizadas
+- Validação de sintaxe com `node --check` nos arquivos JS alterados/adicionados.
+- Revisão de consistência dos caminhos de scripts em HTML após separação por página.
+- Inicialização do servidor para confirmar que a aplicação sobe com a nova organização.
+
+### Limitações desta etapa
+- Não houve validação visual fim a fim no navegador com fluxo autenticado completo nesta execução.
+
+## 2026-11-21
+
+### Prompt
+Comentar todos os arquivos JavaScript de forma didática, explicando cada bloco, e manter os arquivos separados por responsabilidade para facilitar organização e estudo.
+
+### Ação realizada
+- Revisão e padronização de comentários em todos os arquivos JS da aplicação principal (`app.js`, `public/js`, `src/routes`, `src/controllers`, `src/models`, `src/middlewares`, `src/database/config.js`).
+- Inclusão de cabeçalho de responsabilidade no topo de cada arquivo JavaScript, descrevendo:
+  - para que o arquivo existe;
+  - em que camada ele atua;
+  - qual tipo de lógica concentra.
+- Inclusão/ajuste de comentários curtos por bloco e por função, com foco didático:
+  - entrada/saída de dados;
+  - validações;
+  - chamadas `fetch` no front-end;
+  - consultas SQL nos models;
+  - tratamento de erros.
+- Manutenção da separação de responsabilidades já organizada no front-end:
+  - `script.js` (utilitários globais),
+  - `auth.js` (login/cadastro),
+  - `diario.js` (diário),
+  - `dashboard.js` (dashboard),
+  - `descoberta.js` (questionário),
+  - `resultado.js` (resultado).
+- Sem mudança de escopo funcional e sem alteração estrutural de banco.
+
+### Validações realizadas
+- Verificação de sintaxe JavaScript com `node --check` após os ajustes.
+- Verificação automática para confirmar que todos os arquivos `.js` da aplicação principal iniciam com bloco/comentário de responsabilidade.
+
+### Limitações desta etapa
+- Não houve validação visual em navegador nesta execução.
+
+## 2026-11-21
+
+### Prompt
+Criar um roteiro da banca em PDF, incluindo imagens para deixar o material mais didático e fácil de entender.
+
+### Ação realizada
+- Criação de um gerador em Python com ReportLab e Pillow:
+  - `docs/gerarRoteiroPdf.py`
+- Geração de imagens didáticas próprias para o material:
+  - `docs/assets/arquitetura_camadas.png` (diagrama de arquitetura em camadas);
+  - `docs/assets/fluxo_descoberta.png` (fluxo da funcionalidade de descoberta).
+- Geração do PDF final de roteiro:
+  - `docs/roteiroBancaProjetoFilosofia.pdf`
+- Inclusão de imagens locais do projeto no PDF para apoio visual contextual:
+  - `public/assets/imgs/dantas.ink_09f891c089564312bba6ad85d8864f7b.jpg`
+  - `public/assets/imgs/dantas.ink_5483fc5c8a5f4376bc15b6234de3b8e7.jpg`
+- Geração de resumo em markdown com referência dos arquivos:
+  - `docs/roteiroBancaProjetoFilosofia.md`
+
+### Validações realizadas
+- Leitura do PDF gerado para verificar conteúdo textual e presença das imagens.
+- Conferência da pasta `docs/assets` para confirmar criação dos diagramas.
+
+### Limitações desta etapa
+- O roteiro foi estruturado com foco em fala de 10 minutos e demonstração prática; pode ser ajustado para um estilo mais formal ou mais resumido conforme preferência da apresentação.
+
+## 2026-11-21
+
+### Prompt
+Deixar os comentários dos arquivos JavaScript bem didáticos, explicando bloco por bloco o que cada parte faz, para onde vai e como funciona, mantendo os arquivos organizados por responsabilidade.
+
+### Ação realizada
+- Reforço didático de comentários em toda a aplicação principal:
+  - camada de entrada (`app.js`);
+  - rotas (`src/routes/*.js`);
+  - controllers (`src/controllers/*.js`);
+  - models (`src/models/*.js`);
+  - middleware de autenticação;
+  - configuração de banco (`src/database/config.js`);
+  - front-end JS (`public/js/*.js`).
+- Ampliação dos comentários para formato de estudo:
+  - descrição de responsabilidade do arquivo;
+  - organização interna por blocos;
+  - explicação de entradas, processos e saídas nas funções principais;
+  - indicação explícita dos endpoints consumidos no front-end.
+- Reescrita didática e formatação uniforme dos controladores com maior complexidade:
+  - `src/controllers/descobertaController.js`;
+  - `src/controllers/usuarioController.js`.
+- Preservação da separação por responsabilidade no front-end:
+  - `script.js` (utilitários),
+  - `auth.js` (autenticação),
+  - `diario.js` (diário),
+  - `dashboard.js` (dashboard),
+  - `descoberta.js` (questionário),
+  - `resultado.js` (resultado).
+
+### Validações realizadas
+- Verificação de sintaxe JavaScript com `node --check` em todos os `.js` da aplicação principal (32 arquivos, sem erro).
+
+### Limitações desta etapa
+- Não houve validação visual em navegador nesta execução.
+
 ## 2026-11-18
 
 ### Prompt

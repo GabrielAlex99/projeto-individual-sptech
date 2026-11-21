@@ -1,3 +1,8 @@
+/*
+  Arquivo: src/models/dashboardModel.js
+  Responsabilidade: consultas SQL agregadas para a dashboard.
+*/
+
 const database = require("../database/config");
 
 function buscarRespostasPorCorrente() {
