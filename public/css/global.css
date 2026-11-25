@@ -938,15 +938,20 @@ body.pagina-descoberta .selos-descoberta li {
   width: 22px;
   height: 22px;
   min-width: 22px;
+  min-height: 22px;
   border-radius: 999px;
   border: 1px solid #4c463b;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 22px;
+  padding: 0;
+  line-height: 1;
   color: #d6c7a3;
   font-size: 0.8rem;
   font-weight: 700;
-  margin-top: 1px;
+  text-align: center;
+  margin-top: 0;
 }
 
 .alternativa-texto {
