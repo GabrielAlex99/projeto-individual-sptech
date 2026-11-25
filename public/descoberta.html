@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="./css/global.css">
 </head>
 
-<body class="pagina-com-navbar">
+<body class="pagina-com-navbar pagina-descoberta">
   <header class="barra-navegacao">
-    <div class="marca-navegacao">PROJETO FILOSOFIA</div>
+    <a class="marca-navegacao" href="index.html">PROJETO FILOSOFIA</a>
     <nav class="links-navegacao">
       <a href="index.html"><img class="icone-nav" src="./assets/imgs/icone-inicio.svg" alt="">Início</a>
       <a class="ativo" href="descoberta.html"><img class="icone-nav" src="./assets/imgs/icone-descoberta.svg" alt="">Descoberta</a>
@@ -28,7 +28,7 @@
     <section class="cabecalho-pagina">
       <h1>Descoberta Filosófica</h1>
       <p class="frase-destaque">“A vida não examinada não vale a pena ser vivida.”</p>
-      <ul class="icones-identidade">
+      <ul class="icones-identidade selos-descoberta">
         <li><img src="./assets/imgs/icone-descoberta.svg" alt="Ícone de busca">Investigação</li>
         <li><img src="./assets/imgs/icone-maos.svg" alt="Ícone de escolhas">Escolha consciente</li>
         <li><img src="./assets/imgs/icone-balanca.svg" alt="Ícone de equilíbrio">Equilíbrio</li>
@@ -36,9 +36,24 @@
     </section>
     <p id="status_descoberta" class="subtitulo">Carregando pergunta filosófica...</p>
     <p id="progresso_descoberta" class="subtitulo"></p>
-    <p><a id="link_resultado" class="link-secundario" href="resultado.html" style="display: none;">Ver meu resultado</a></p>
+    <div id="barra_progresso_descoberta" class="progresso-descoberta-barra" style="display: none;">
+      <div id="progresso_descoberta_preenchimento" class="progresso-descoberta-preenchimento"></div>
+    </div>
 
     <h2 id="enunciado_pergunta">Aguardando pergunta ativa...</h2>
+
+    <section id="bloco_conclusao_descoberta" class="bloco-conclusao-descoberta" style="display: none;">
+      <h2 id="titulo_conclusao_descoberta">
+        Questionário concluído <span class="indicador-conclusao-descoberta">✓</span>
+      </h2>
+      <p id="resumo_conclusao_descoberta" class="subtitulo">
+        Seu perfil filosófico já foi gerado com base nas respostas registradas.
+      </p>
+      <div id="acoes_conclusao_descoberta" class="acoes-conclusao-descoberta" style="display: none;">
+        <a id="link_resultado" class="botao-descoberta" href="resultado.html">Ver meu resultado</a>
+        <a id="link_diario_descoberta" class="link-secundario botao-secundario-conclusao" href="diario.html">Acessar meu Diário</a>
+      </div>
+    </section>
 
     <section id="alternativas_container"></section>
     <button id="botao_continuar_descoberta" class="botao" type="button" style="display: none;">Continuar para a próxima pergunta</button>

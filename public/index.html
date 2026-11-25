@@ -10,7 +10,7 @@
 
 <body class="pagina-com-navbar">
     <header class="barra-navegacao">
-        <div class="marca-navegacao">PROJETO FILOSOFIA</div>
+        <a class="marca-navegacao" href="index.html">PROJETO FILOSOFIA</a>
         <nav class="links-navegacao">
             <a class="ativo" href="index.html"><img class="icone-nav" src="./assets/imgs/icone-inicio.svg" alt="">Início</a>
             <a href="descoberta.html"><img class="icone-nav" src="./assets/imgs/icone-descoberta.svg" alt="">Descoberta</a>
@@ -29,12 +29,12 @@
             <p class="hero-badge">Projeto acadêmico • filosofia aplicada ao autoconhecimento</p>
             <h1>Conhecer o mundo começa por conhecer a si mesmo.</h1>
             <p>
-                Sou estudante da SPTech e este projeto acadêmico individual nasceu da união entre desenvolvimento web e
-                filosofia para apoiar o autoconhecimento.
+                Explore correntes filosóficas de forma prática: responda perguntas reflexivas, descubra tendências do
+                seu pensamento e acompanhe sua jornada com mais clareza.
             </p>
             <p>
-                Em momentos difíceis da minha vida, a filosofia se tornou uma base para fortalecer a resiliência e não
-                desistir dos meus sonhos. Esta aplicação transforma essa jornada em uma experiência prática de estudo.
+                Registre aprendizados no Diário e observe sua evolução pessoal ao longo do tempo, em uma experiência
+                educativa, íntima e orientada ao autoconhecimento.
             </p>
             <div class="acoes-home">
                 <a class="botao-descoberta" href="cadastro.html">Criar cadastro</a>
@@ -44,62 +44,82 @@
 
         <section class="home-info card reveal">
             <h2>Como a experiência funciona</h2>
-            <p>
-                Na Descoberta, você responde perguntas filosóficas em sequência. No Resultado, acompanha como a soma das
-                respostas levou ao desfecho atual. No Diário, registra reflexões pessoais. Na Dashboard, os dados
-                aparecem de forma agregada, sem expor respostas individuais.
-            </p>
-            <p>
-                Esse fluxo foi desenvolvido no escopo acadêmico atual com HTML, CSS, JavaScript Vanilla, Node.js,
-                Express e MySQL.
-            </p>
-            <div class="bloco-identidade">
-                <p>Elementos visuais inspirados nos símbolos da tatuagem que motivou o projeto:</p>
-                <ul class="icones-identidade">
-                    <li><img src="./assets/imgs/icone-ampulheta.svg" alt="Ícone de ampulheta">Memento mori</li>
-                    <li><img src="./assets/imgs/icone-balanca.svg" alt="Ícone de balança">Razão e emoção</li>
-                    <li><img src="./assets/imgs/icone-maos.svg" alt="Ícone de mãos">Escolhas e responsabilidade</li>
-                </ul>
+            <div class="fluxo-passos-grid">
+                <article class="passo-card">
+                    <p class="passo-numero">01</p>
+                    <h3>Descoberta</h3>
+                    <p>Responda ao questionário reflexivo para mapear seus valores e afinidades filosóficas.</p>
+                </article>
+                <article class="passo-card">
+                    <p class="passo-numero">02</p>
+                    <h3>Resultado</h3>
+                    <p>Entenda como suas respostas se conectam a uma corrente filosófica e aos seus principais pensadores.</p>
+                </article>
+                <article class="passo-card">
+                    <p class="passo-numero">03</p>
+                    <h3>Diário</h3>
+                    <p>Registre pensamentos, dilemas e aprendizados do dia a dia em um espaço privado de escrita.</p>
+                </article>
+                <article class="passo-card">
+                    <p class="passo-numero">04</p>
+                    <h3>Dashboard</h3>
+                    <p>Acompanhe sua evolução, consistência e padrões gerais de reflexão com privacidade.</p>
+                </article>
             </div>
         </section>
 
         <section class="home-info card reveal">
-            <h2>Símbolos da tatuagem e significado</h2>
+            <h2>A inspiração por trás do projeto</h2>
             <p>
-                A ampulheta dentro da caveira representa o tempo de vida se esgotando, com “memento mori” acima e
-                “memento vivere” abaixo.
+                Sou estudante da SPTech e desenvolvi este projeto acadêmico para transformar filosofia em prática de
+                autoconhecimento. Em momentos difíceis, esse estudo foi uma base de resiliência para seguir com propósito.
             </p>
             <p>
-                A balança com coração e cérebro representa o equilíbrio entre razão e emoção.
+                A identidade visual nasce dos símbolos da tatuagem que inspira essa jornada: ampulheta (memento mori e
+                memento vivere), balança (equilíbrio entre razão e emoção) e mãos (escolhas e responsabilidade).
             </p>
-            <p>
-                A releitura da criação de Adão apresenta duas mãos, com a mão de Adão em esqueleto.
-            </p>
+            <ul class="icones-identidade">
+                <li><img src="./assets/imgs/icone-ampulheta.svg" alt="Ícone de ampulheta">Memento mori e memento vivere</li>
+                <li><img src="./assets/imgs/icone-balanca.svg" alt="Ícone de balança">Razão e emoção</li>
+                <li><img src="./assets/imgs/icone-maos.svg" alt="Ícone de mãos">Escolhas e responsabilidade</li>
+            </ul>
             <section class="galeria-tatuagem" aria-label="Fotos reais da tatuagem">
                 <figure class="foto-tatuagem-bloco">
                     <img src="./assets/imgs/dantas.ink_09f891c089564312bba6ad85d8864f7b.jpg"
                         alt="Foto da tatuagem com ampulheta dentro da caveira, com os dizeres memento mori e memento vivere.">
                     <figcaption class="subtitulo">
-                        Ampulheta na caveira com “memento mori” e “memento vivere”.
+                        Ampulheta na caveira: lembrar da finitude para valorizar a vida.
                     </figcaption>
                 </figure>
                 <figure class="foto-tatuagem-bloco">
                     <img src="./assets/imgs/dantas.ink_5483fc5c8a5f4376bc15b6234de3b8e7.jpg"
                         alt="Foto da tatuagem com balança entre coração e cérebro e releitura da criação de Adão com mão em esqueleto.">
                     <figcaption class="subtitulo">
-                        Balança entre coração e cérebro e releitura da criação de Adão.
+                        Balança e mãos: equilíbrio interno, escolhas e responsabilidade.
                     </figcaption>
                 </figure>
             </section>
         </section>
+
+        <section class="home-info card reveal contexto-academico-home">
+            <h2>Contexto acadêmico e contribuição social</h2>
+            <p>
+                Este projeto foi construído com HTML, CSS, JavaScript Vanilla, Node.js, Express e MySQL no contexto
+                acadêmico da SPTech.
+            </p>
+            <p>
+                A proposta dialoga com os Objetivos de Desenvolvimento Sustentável, com foco principal na ODS 3 e
+                contribuição complementar da ODS 4.
+            </p>
+            <nav class="rodape-ods-nav" aria-label="Links ODS da ONU Brasil">
+                <a class="rodape-ods-link" href="https://brasil.un.org/pt-br/sdgs/3" target="_blank" rel="noopener noreferrer">ODS 3 · Saúde e bem-estar</a>
+                <a class="rodape-ods-link" href="https://brasil.un.org/pt-br/sdgs/4" target="_blank" rel="noopener noreferrer">ODS 4 · Educação de qualidade</a>
+            </nav>
+        </section>
     </main>
 
     <footer class="rodape-projeto">
-        <p>Filosofia, reflexão e autoconhecimento em diálogo com os Objetivos de Desenvolvimento Sustentável. Com foco principal na ODS 3 e contribuição complementar da ODS 4.</p>
-        <nav class="rodape-ods-nav" aria-label="Links ODS da ONU Brasil">
-            <a class="rodape-ods-link" href="https://brasil.un.org/pt-br/sdgs/3" target="_blank" rel="noopener noreferrer">ODS 3 · Saúde e bem-estar</a>
-            <a class="rodape-ods-link" href="https://brasil.un.org/pt-br/sdgs/4" target="_blank" rel="noopener noreferrer">ODS 4 · Educação de qualidade</a>
-        </nav>
+        <p>Filosofia, reflexão e autoconhecimento como prática contínua de desenvolvimento humano.</p>
     </footer>
 
     <script src="./js/script.js"></script>

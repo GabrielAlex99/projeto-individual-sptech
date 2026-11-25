@@ -26,12 +26,35 @@ function atualizarProgressoDescoberta(mensagem) {
   }
 }
 
+// Atualiza barra visual de progresso com preenchimento proporcional.
+function atualizarBarraProgressoDescoberta(atual, total) {
+  const barra = document.getElementById("barra_progresso_descoberta");
+  const preenchimento = document.getElementById("progresso_descoberta_preenchimento");
+
+  if (!barra || !preenchimento) {
+    return;
+  }
+
+  const atualNumero = Number(atual);
+  const totalNumero = Number(total);
+
+  if (!Number.isFinite(atualNumero) || !Number.isFinite(totalNumero) || totalNumero <= 0) {
+    barra.style.display = "none";
+    preenchimento.style.width = "0%";
+    return;
+  }
+
+  const percentual = Math.min(100, Math.max(0, (atualNumero / totalNumero) * 100));
+  barra.style.display = "block";
+  preenchimento.style.width = `${percentual}%`;
+}
+
 // Exibe ou oculta o link para a página de resultado.
 function exibirLinkResultadoDescoberta(exibir) {
-  const linkResultado = document.getElementById("link_resultado");
+  const acoesConclusao = document.getElementById("acoes_conclusao_descoberta");
 
-  if (linkResultado) {
-    linkResultado.style.display = exibir ? "inline-block" : "none";
+  if (acoesConclusao) {
+    acoesConclusao.style.display = exibir ? "flex" : "none";
   }
 }
 
@@ -41,6 +64,25 @@ function exibirBotaoContinuarDescoberta(exibir) {
 
   if (botaoContinuar) {
     botaoContinuar.style.display = exibir ? "block" : "none";
+  }
+}
+
+// Alterna entre modo ativo e modo concluído da descoberta sem alterar a regra de negócio.
+function exibirBlocoConclusaoDescoberta(exibir) {
+  const blocoConclusao = document.getElementById("bloco_conclusao_descoberta");
+  const enunciadoPergunta = document.getElementById("enunciado_pergunta");
+  const alternativas = document.getElementById("alternativas_container");
+
+  if (blocoConclusao) {
+    blocoConclusao.style.display = exibir ? "block" : "none";
+  }
+
+  if (enunciadoPergunta) {
+    enunciadoPergunta.style.display = exibir ? "none" : "block";
+  }
+
+  if (alternativas) {
+    alternativas.style.display = exibir ? "none" : "block";
   }
 }
 
@@ -73,19 +115,29 @@ function renderizarAlternativasDescoberta(alternativas) {
   container.innerHTML = "";
 
   for (let i = 0; i < alternativas.length; i++) {
+    const letraAlternativa = String.fromCharCode(65 + i);
     const campo = document.createElement("section");
     campo.className = "campo";
 
     const botao = document.createElement("button");
-    botao.className = "botao";
+    botao.className = "alternativa-descoberta";
     botao.type = "button";
-    botao.textContent = alternativas[i].texto;
     botao.dataset.idAlternativa = String(alternativas[i].idAlternativa);
     botao.setAttribute("aria-pressed", "false");
     botao.addEventListener("click", function () {
       registrarRespostaDescoberta(alternativas[i].idAlternativa);
     });
 
+    const marcador = document.createElement("span");
+    marcador.className = "alternativa-marcador";
+    marcador.textContent = letraAlternativa;
+
+    const textoAlternativa = document.createElement("span");
+    textoAlternativa.className = "alternativa-texto";
+    textoAlternativa.textContent = alternativas[i].texto;
+
+    botao.appendChild(marcador);
+    botao.appendChild(textoAlternativa);
     campo.appendChild(botao);
     container.appendChild(campo);
   }
@@ -175,11 +227,13 @@ function carregarProximaPerguntaPendenteDescoberta() {
       }
 
       if (retorno.tipo === "semPerguntaAtiva") {
+        exibirBlocoConclusaoDescoberta(false);
         limparAlternativas();
         renderizarPerguntaDescoberta({
           enunciado: "Nenhuma pergunta ativa disponível no momento.",
         });
         atualizarProgressoDescoberta("");
+        atualizarBarraProgressoDescoberta(0, 0);
         atualizarStatusDescoberta("Nenhuma pergunta ativa cadastrada para o questionário.");
         exibirBotaoContinuarDescoberta(false);
         exibirLinkResultadoDescoberta(false);
@@ -189,25 +243,24 @@ function carregarProximaPerguntaPendenteDescoberta() {
       const dados = retorno.dados;
 
       if (dados.concluido) {
+        exibirBlocoConclusaoDescoberta(true);
         limparAlternativas();
-        renderizarPerguntaDescoberta({
-          enunciado: "Questionário concluído.",
-        });
-        atualizarProgressoDescoberta(`Concluído: ${dados.totalRespondidas} de ${dados.totalPerguntasAtivas} perguntas.`);
-        atualizarStatusDescoberta("Você já respondeu todas as perguntas ativas. Acesse seu resultado final.");
+        atualizarProgressoDescoberta(`Pergunta ${dados.totalPerguntasAtivas} de ${dados.totalPerguntasAtivas}`);
+        atualizarBarraProgressoDescoberta(dados.totalPerguntasAtivas, dados.totalPerguntasAtivas);
+        atualizarStatusDescoberta("Questionário finalizado com sucesso.");
         exibirBotaoContinuarDescoberta(false);
         exibirLinkResultadoDescoberta(true);
         return;
       }
 
+      exibirBlocoConclusaoDescoberta(false);
       const pergunta = dados.pergunta;
 
       renderizarPerguntaDescoberta(pergunta);
       renderizarAlternativasDescoberta(pergunta.alternativas || []);
       limparDestaqueAlternativasRegistradas();
-      atualizarProgressoDescoberta(
-        `Pergunta ${dados.posicaoAtual} de ${dados.totalPerguntasAtivas} · Respondidas: ${dados.totalRespondidas}`
-      );
+      atualizarProgressoDescoberta(`Pergunta ${dados.posicaoAtual} de ${dados.totalPerguntasAtivas}`);
+      atualizarBarraProgressoDescoberta(dados.posicaoAtual, dados.totalPerguntasAtivas);
       atualizarStatusDescoberta("Escolha uma alternativa para registrar sua resposta.");
       exibirBotaoContinuarDescoberta(false);
       exibirLinkResultadoDescoberta(false);
@@ -215,8 +268,10 @@ function carregarProximaPerguntaPendenteDescoberta() {
     })
     .catch(function (erro) {
       console.log("Erro ao carregar próxima pergunta pendente:", erro);
+      exibirBlocoConclusaoDescoberta(false);
       atualizarStatusDescoberta("Falha ao consultar o questionário da sua conta.");
       atualizarProgressoDescoberta("");
+      atualizarBarraProgressoDescoberta(0, 0);
       exibirBotaoContinuarDescoberta(false);
       exibirLinkResultadoDescoberta(false);
     });
@@ -243,30 +298,36 @@ function carregarPerguntaPublicaDescoberta() {
     })
     .then(function (dadosPergunta) {
       if (!dadosPergunta) {
+        exibirBlocoConclusaoDescoberta(false);
         limparAlternativas();
         renderizarPerguntaDescoberta({
           enunciado: "Nenhuma pergunta ativa disponível no momento.",
         });
         atualizarStatusDescoberta("No momento não há pergunta pública para exibição.");
         atualizarProgressoDescoberta("");
+        atualizarBarraProgressoDescoberta(0, 0);
         exibirBotaoContinuarDescoberta(false);
         exibirLinkResultadoDescoberta(false);
         return;
       }
 
+      exibirBlocoConclusaoDescoberta(false);
       renderizarPerguntaDescoberta(dadosPergunta);
       renderizarAlternativasDescoberta(dadosPergunta.alternativas || []);
       limparDestaqueAlternativasRegistradas();
       alterarEstadoBotoesAlternativas(true);
       atualizarProgressoDescoberta("Visualização pública da pergunta inicial.");
+      atualizarBarraProgressoDescoberta(0, 0);
       atualizarStatusDescoberta("Entre na sua conta para registrar respostas e avançar no questionário.");
       exibirBotaoContinuarDescoberta(false);
       exibirLinkResultadoDescoberta(false);
     })
     .catch(function (erro) {
       console.log("Erro ao carregar pergunta pública da descoberta:", erro);
+      exibirBlocoConclusaoDescoberta(false);
       atualizarStatusDescoberta("Falha ao carregar pergunta pública da descoberta.");
       atualizarProgressoDescoberta("");
+      atualizarBarraProgressoDescoberta(0, 0);
       exibirBotaoContinuarDescoberta(false);
       exibirLinkResultadoDescoberta(false);
     });
