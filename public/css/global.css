@@ -77,6 +77,35 @@ header {
   outline-offset: 2px;
 }
 
+/* Evita piscar dos estados de autenticação antes da validação da sessão */
+body:not(.auth-ui-pronta) .barra-navegacao nav a.acao-sair,
+body:not(.auth-ui-pronta) .menu-lateral nav a.acao-sair,
+body:not(.auth-ui-pronta) .barra-navegacao nav a[href="login.html"]:not(.acao-sair),
+body:not(.auth-ui-pronta) .menu-lateral nav a[href="login.html"]:not(.acao-sair),
+body:not(.auth-ui-pronta) .acoes-home {
+  visibility: hidden;
+}
+
+.indicador-usuario-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #3a3528;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #e7ddc3;
+  background: rgba(216, 180, 106, 0.1);
+  font-size: 0.88rem;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.indicador-usuario-nav::before {
+  content: "●";
+  color: #d8b46a;
+  font-size: 0.7rem;
+}
+
 main {
   padding: 32px 8%;
 }
