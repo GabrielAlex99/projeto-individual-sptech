@@ -59,6 +59,10 @@ function linkEhEntrar(link) {
     return false;
   }
 
+  if (link.classList.contains("acao-entrar-nav")) {
+    return true;
+  }
+
   const nomeArquivo = obterNomeArquivoDoLink(link);
   return nomeArquivo === "login.html";
 }
@@ -116,9 +120,21 @@ function inserirIndicadorUsuario(nomeUsuario) {
     return;
   }
 
-  const menus = document.querySelectorAll(".barra-navegacao nav, .menu-lateral nav");
+  const areasConta = document.querySelectorAll(".area-conta-nav");
 
-  menus.forEach(function (menu) {
+  if (areasConta.length > 0) {
+    areasConta.forEach(function (areaConta) {
+      const indicador = document.createElement("span");
+      indicador.className = "indicador-usuario-nav";
+      indicador.textContent = `Olá, ${nome}`;
+      areaConta.prepend(indicador);
+    });
+    return;
+  }
+
+  const menusLegados = document.querySelectorAll(".menu-lateral nav");
+
+  menusLegados.forEach(function (menu) {
     const indicador = document.createElement("span");
     indicador.className = "indicador-usuario-nav";
     indicador.textContent = `Olá, ${nome}`;
@@ -128,7 +144,7 @@ function inserirIndicadorUsuario(nomeUsuario) {
 
 // Atualiza menu superior/lateral conforme estado de autenticação validado no servidor.
 function atualizarNavegacaoPorSessao(sessaoAtiva, nomeUsuario) {
-  const todosLinksMenu = document.querySelectorAll(".barra-navegacao nav a, .menu-lateral nav a");
+  const todosLinksMenu = document.querySelectorAll(".barra-navegacao nav a, .menu-lateral nav a, .area-conta-nav a");
 
   todosLinksMenu.forEach(function (link) {
     if (link.classList.contains("acao-sair")) {
@@ -148,6 +164,22 @@ function atualizarNavegacaoPorSessao(sessaoAtiva, nomeUsuario) {
   if (sessaoAtiva) {
     inserirIndicadorUsuario(nomeUsuario);
   }
+}
+
+// Aplica estado visual da barra fixa ao rolar a página.
+function inicializarEfeitoRolagemNavbar() {
+  const navbar = document.querySelector(".barra-navegacao");
+  if (!navbar) {
+    return;
+  }
+
+  function atualizarEstadoRolagem() {
+    const rolou = window.scrollY > 8;
+    navbar.classList.toggle("navbar-rolada", rolou);
+  }
+
+  atualizarEstadoRolagem();
+  window.addEventListener("scroll", atualizarEstadoRolagem, { passive: true });
 }
 
 // Atualiza CTAs da home para cenário visitante x usuário autenticado.
@@ -305,5 +337,6 @@ window.encerrarSessaoUsuario = encerrarSessaoUsuario;
 document.addEventListener("DOMContentLoaded", function () {
   inicializarAcaoSair();
   inicializarInterfaceAutenticacao();
+  inicializarEfeitoRolagemNavbar();
   inicializarRevelacaoSuave();
 });

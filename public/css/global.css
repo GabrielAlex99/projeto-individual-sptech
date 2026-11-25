@@ -27,8 +27,8 @@ body::before {
 /* Navegação principal */
 header {
   width: 100%;
-  padding: 24px 8%;
-  border-bottom: 1px solid #2f2f33;
+  padding: 0 8%;
+  border-bottom: 1px solid rgba(216, 180, 106, 0.35);
   letter-spacing: 1px;
   text-transform: uppercase;
   color: #c8c1a8;
@@ -37,39 +37,88 @@ header {
 .barra-navegacao {
   display: flex;
   align-items: center;
+  min-height: 68px;
   justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 18px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  background: rgba(9, 9, 12, 0.88);
+  backdrop-filter: saturate(115%) blur(0px);
+  transition: background 0.25s ease, backdrop-filter 0.25s ease, border-color 0.25s ease;
+}
+
+.barra-navegacao.navbar-rolada {
+  background: rgba(8, 8, 10, 0.75);
+  backdrop-filter: saturate(130%) blur(8px);
+  border-bottom-color: rgba(216, 180, 106, 0.5);
 }
 
 .marca-navegacao {
   color: #e7ddc3;
   font-weight: 700;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.links-navegacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex: 1;
+  min-width: 0;
 }
 
 .barra-navegacao nav {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 18px;
+  flex-wrap: nowrap;
 }
 
 .barra-navegacao nav a {
   text-decoration: none;
   color: #d1c9b3;
-  border: 1px solid #2f2f33;
-  border-radius: 6px;
-  padding: 8px 10px;
+  border: none;
+  border-radius: 0;
+  padding: 6px 0;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  transition: color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
 }
 
-.barra-navegacao nav a:hover,
+.barra-navegacao nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1px;
+  background: rgba(216, 180, 106, 0.9);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.22s ease;
+}
+
+.barra-navegacao nav a:hover {
+  color: #efe2c0;
+}
+
+.barra-navegacao nav a:hover::after {
+  transform: scaleX(1);
+}
+
 .barra-navegacao nav a.ativo {
-  background: #16161a;
-  border-color: #d8b46a;
-  color: #f6f1df;
+  color: #d8b46a;
+}
+
+.barra-navegacao nav a.ativo::after {
+  transform: scaleX(1);
 }
 
 .barra-navegacao nav a:focus-visible {
@@ -77,10 +126,43 @@ header {
   outline-offset: 2px;
 }
 
+.area-conta-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 210px;
+}
+
+.area-conta-nav a {
+  text-decoration: none;
+  color: #d1c9b3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  transition: color 0.2s ease;
+}
+
+.area-conta-nav a:hover {
+  color: #efe2c0;
+}
+
+.area-conta-nav a.ativo {
+  color: #d8b46a;
+}
+
+.area-conta-nav a:focus-visible {
+  outline: 2px solid rgba(216, 180, 106, 0.75);
+  outline-offset: 2px;
+}
+
 /* Evita piscar dos estados de autenticação antes da validação da sessão */
 body:not(.auth-ui-pronta) .barra-navegacao nav a.acao-sair,
 body:not(.auth-ui-pronta) .menu-lateral nav a.acao-sair,
-body:not(.auth-ui-pronta) .barra-navegacao nav a[href="login.html"]:not(.acao-sair),
+body:not(.auth-ui-pronta) .area-conta-nav .acao-sair,
+body:not(.auth-ui-pronta) .area-conta-nav .acao-entrar-nav,
+body:not(.auth-ui-pronta) .barra-navegacao nav a.acao-entrar-nav,
 body:not(.auth-ui-pronta) .menu-lateral nav a[href="login.html"]:not(.acao-sair),
 body:not(.auth-ui-pronta) .acoes-home {
   visibility: hidden;
@@ -98,6 +180,7 @@ body:not(.auth-ui-pronta) .acoes-home {
   font-size: 0.88rem;
   text-transform: none;
   letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .indicador-usuario-nav::before {
@@ -108,6 +191,10 @@ body:not(.auth-ui-pronta) .acoes-home {
 
 main {
   padding: 32px 8%;
+}
+
+body.pagina-com-navbar {
+  padding-top: 80px;
 }
 
 /* Rodapé institucional (ODS) */
@@ -828,6 +915,41 @@ body > .card h1 {
 }
 
 @media (max-width: 980px) {
+  .barra-navegacao {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .links-navegacao {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .barra-navegacao nav {
+    gap: 14px;
+  }
+
+  .barra-navegacao nav a::after {
+    bottom: -4px;
+  }
+
+  .area-conta-nav {
+    min-width: auto;
+    margin-left: auto;
+    gap: 10px;
+  }
+
+  body.pagina-com-navbar {
+    padding-top: 122px;
+  }
+
   .menu-lateral {
     position: static;
     width: 100%;
