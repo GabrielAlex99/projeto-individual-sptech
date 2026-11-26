@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./css/global.css">
 </head>
 
-<body class="pagina-com-navbar">
+<body class="pagina-com-navbar pagina-resultado">
   <header class="barra-navegacao">
     <a class="marca-navegacao" href="index.html">PROJETO FILOSOFIA</a>
     <nav class="links-navegacao">
@@ -26,12 +26,8 @@
 
   <main class="card reveal">
     <section class="cabecalho-pagina">
+      <p id="etiqueta_topo_resultado" class="etiqueta-topo-resultado" style="display: none;"></p>
       <h1 id="corrente_resultado">Carregando seu resultado...</h1>
-      <ul class="icones-identidade">
-        <li><img src="./assets/imgs/icone-resultado.svg" alt="Ícone de resultado">Síntese de respostas</li>
-        <li><img src="./assets/imgs/icone-balanca.svg" alt="Ícone de equilíbrio">Leitura equilibrada</li>
-        <li><img src="./assets/imgs/icone-ampulheta.svg" alt="Ícone de tempo">Processo contínuo</li>
-      </ul>
     </section>
     <p class="subtitulo" id="status_resultado">Consultando sua resposta registrada...</p>
     <p class="subtitulo" id="progresso_resultado"></p>
@@ -39,22 +35,30 @@
     <section id="resultado_conteudo" style="display: none;">
       <p class="subtitulo" id="descricao_resultado"></p>
       <p id="correntes_empate_resultado" style="display: none;"></p>
-      <p id="explicacao_resultado_metodo"></p>
-      <p id="explicacao_resultado_interpretacao"></p>
-      <p class="subtitulo">Pontuação por corrente nas perguntas ativas respondidas</p>
-      <ul id="ranking_resultado"></ul>
+      <section id="perfil_resultado_detalhado" class="bloco-perfil-resultado"></section>
+
+      <section class="bloco-pontuacao-resultado">
+        <h2>Pontuação por corrente</h2>
+        <div id="ranking_resultado"></div>
+      </section>
+
+      <section id="acoes_resultado_jornada" class="acoes-conclusao-descoberta">
+        <a class="botao-descoberta" href="diario.html">Registrar reflexão no Diário</a>
+        <a class="botao-secundario-conclusao" href="dashboard.html">Ver minha Dashboard</a>
+      </section>
+
       <p class="subtitulo resultado-alerta">
         Resultado educativo: não é diagnóstico, rótulo definitivo nem orientação profissional.
       </p>
     </section>
 
     <section id="resultado_incompleto_acoes" class="resultado-incompleto-acoes" style="display: none;">
-      <a class="botao-descoberta" href="descoberta.html">Continuar na Descoberta</a>
+      <a id="botao_ir_descoberta_resultado" class="botao-descoberta" href="descoberta.html">Continuar na Descoberta</a>
     </section>
 
     <section class="card bloco-significados-correntes reveal">
       <h2>Significado geral das correntes</h2>
-      <ul id="significados_correntes_resultado"></ul>
+      <ul id="significados_correntes_resultado" class="grade-significados-correntes"></ul>
     </section>
   </main>
   <footer class="rodape-projeto">

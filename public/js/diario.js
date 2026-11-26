@@ -31,7 +31,9 @@ function atualizarStatusDiario(mensagem) {
   const statusDiario = document.getElementById("status_diario");
 
   if (statusDiario) {
-    statusDiario.innerText = mensagem;
+    const texto = (mensagem || "").trim();
+    statusDiario.innerText = texto;
+    statusDiario.style.display = texto ? "block" : "none";
   }
 }
 
@@ -133,7 +135,7 @@ function renderizarHistoricoDiario(listaRegistros) {
         <span>Publique sua primeira reflexão.</span>
       </li>
     `;
-    atualizarStatusDiario("Histórico vazio. Faça sua primeira publicação.");
+    atualizarStatusDiario("");
     return;
   }
 

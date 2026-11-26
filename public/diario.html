@@ -8,21 +8,23 @@
   <link rel="stylesheet" href="./css/global.css">
 </head>
 
-<body>
-  <aside class="menu-lateral">
-    <h1>Painel Filosófico</h1>
-    <nav>
+<body class="pagina-com-navbar pagina-diario">
+  <header class="barra-navegacao">
+    <a class="marca-navegacao" href="index.html">PROJETO FILOSOFIA</a>
+    <nav class="links-navegacao">
       <a href="index.html"><img class="icone-nav" src="./assets/imgs/icone-inicio.svg" alt="">Início</a>
       <a href="descoberta.html"><img class="icone-nav" src="./assets/imgs/icone-descoberta.svg" alt="">Descoberta</a>
       <a class="ativo" href="diario.html"><img class="icone-nav" src="./assets/imgs/icone-diario.svg" alt="">Diário</a>
       <a href="resultado.html"><img class="icone-nav" src="./assets/imgs/icone-resultado.svg" alt="">Resultado</a>
       <a href="dashboard.html"><img class="icone-nav" src="./assets/imgs/icone-dashboard.svg" alt="">Dashboard</a>
-      <a href="login.html"><img class="icone-nav" src="./assets/imgs/icone-login.svg" alt="">Entrar</a>
-      <a href="login.html" class="acao-sair"><img class="icone-nav" src="./assets/imgs/icone-sair.svg" alt="">Sair</a>
     </nav>
-  </aside>
+    <div class="area-conta-nav">
+      <a href="login.html" class="acao-entrar-nav"><img class="icone-nav" src="./assets/imgs/icone-login.svg" alt="">Entrar</a>
+      <a href="login.html" class="acao-sair"><img class="icone-nav" src="./assets/imgs/icone-sair.svg" alt="">Sair</a>
+    </div>
+  </header>
 
-  <main class="conteudo">
+  <main class="diario-main">
     <section class="cabecalho-pagina reveal">
       <h2 class="titulo">Diário Filosófico</h2>
       <p class="frase-destaque">Transforme ideias soltas em reflexões com propósito.</p>
@@ -32,7 +34,6 @@
         <li><img src="./assets/imgs/icone-maos.svg" alt="Ícone de escolha">Registro da jornada</li>
       </ul>
     </section>
-    <p class="subtitulo">Registre suas reflexões e acompanhe sua jornada de pensamento.</p>
     <p class="subtitulo" id="status_diario">Verificando sessão...</p>
 
     <section class="layout-diario" id="diario_conteudo" style="display: none;">
@@ -49,7 +50,7 @@
           <textarea id="conteudo_reflexao_input" placeholder="Escreva sua reflexão, dúvida ou insight filosófico..."></textarea>
         </div>
 
-        <button id="botao_publicar_reflexao" class="botao-enviar" onclick="publicarReflexao()">Publicar reflexão</button>
+        <button id="botao_publicar_reflexao" class="botao-descoberta" onclick="publicarReflexao()">Publicar reflexão</button>
       </article>
 
       <aside class="card">
@@ -63,7 +64,7 @@
       </aside>
     </section>
   </main>
-  <footer class="rodape-projeto rodape-projeto-com-menu">
+  <footer class="rodape-projeto">
     <p>Filosofia, reflexão e autoconhecimento em diálogo com os Objetivos de Desenvolvimento Sustentável. Com foco principal na ODS 3 e contribuição complementar da ODS 4.</p>
     <nav class="rodape-ods-nav" aria-label="Links ODS da ONU Brasil">
       <a class="rodape-ods-link" href="https://brasil.un.org/pt-br/sdgs/3" target="_blank" rel="noopener noreferrer">ODS 3 · Saúde e bem-estar</a>

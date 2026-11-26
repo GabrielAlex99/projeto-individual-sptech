@@ -834,10 +834,114 @@ body > .card h1 {
 
 .resultado-alerta {
   margin-top: 12px;
+  font-size: 0.88rem;
+  opacity: 0.82;
 }
 
 .resultado-incompleto-acoes {
   margin: 14px 0;
+}
+
+body.pagina-resultado > .card {
+  max-width: 710px;
+}
+
+.bloco-perfil-resultado {
+  border: 1px solid #2f2f33;
+  border-radius: 10px;
+  background: rgba(18, 18, 22, 0.86);
+  padding: 14px;
+  margin: 12px 0 14px;
+}
+
+.bloco-perfil-resultado h2 {
+  margin-bottom: 8px;
+}
+
+.rotulo-perfil-corrente {
+  margin: 0 0 8px !important;
+  color: #d8b46a !important;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.bloco-perfil-resultado p {
+  color: #cec7b2;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.bloco-perfil-resultado p:last-child {
+  margin-bottom: 0;
+}
+
+.nota-equilibrio-resultado {
+  font-size: 0.9rem;
+  color: #d7c49a !important;
+}
+
+.bloco-pontuacao-resultado h2 {
+  margin-bottom: 10px;
+}
+
+#ranking_resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-barra-resultado {
+  border: 1px solid #2f2f33;
+  border-radius: 8px;
+  background: #121217;
+  padding: 10px;
+}
+
+.item-barra-resultado.corrente-lider {
+  border-color: rgba(216, 180, 106, 0.68);
+  background: rgba(216, 180, 106, 0.08);
+}
+
+.item-barra-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.item-barra-topo strong {
+  color: #efe7d2;
+}
+
+.item-barra-topo span {
+  color: #c8c1a8;
+  font-size: 0.92rem;
+}
+
+.barra-resultado-trilha {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #1d1d22;
+  overflow: hidden;
+}
+
+.barra-resultado-preenchimento {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6f6a60 0%, #8e8777 100%);
+}
+
+.item-barra-resultado.corrente-lider .barra-resultado-preenchimento {
+  background: linear-gradient(90deg, #c79f4f 0%, #d8b46a 100%);
+}
+
+#acoes_resultado_jornada {
+  margin-top: 16px;
 }
 
 .cabecalho-pagina {
@@ -849,6 +953,19 @@ body > .card h1 {
 
 .cabecalho-pagina .titulo {
   margin-bottom: 0;
+}
+
+.etiqueta-topo-resultado {
+  align-self: flex-start;
+  border: 1px solid #3a3528;
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: #d8b46a;
+  background: rgba(216, 180, 106, 0.08);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
 }
 
 .frase-destaque {
@@ -1037,22 +1154,36 @@ body.pagina-descoberta .selos-descoberta li {
   border-color: #d8b46a;
 }
 
-#ranking_resultado,
 #significados_correntes_resultado {
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin-bottom: 8px;
 }
 
-#ranking_resultado li,
-#significados_correntes_resultado li {
+#significados_correntes_resultado .item-significado-corrente {
   border: 1px solid #2f2f33;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 10px;
   background: #121217;
+}
+
+#significados_correntes_resultado .item-significado-corrente strong {
+  display: block;
+  color: #efe7d2;
+  margin-bottom: 6px;
+}
+
+#significados_correntes_resultado .item-significado-corrente p {
   color: #d1c9b3;
+  margin: 0;
+  line-height: 1.45;
+}
+
+#significados_correntes_resultado .item-significado-corrente.corrente-lider {
+  border-color: rgba(216, 180, 106, 0.68);
+  box-shadow: 0 0 0 1px rgba(216, 180, 106, 0.2);
 }
 
 .bloco-significados-correntes {
@@ -1060,10 +1191,34 @@ body.pagina-descoberta .selos-descoberta li {
 }
 
 /* Diário */
+.diario-main {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-top: 24px;
+}
+
 .layout-diario {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.35fr 1fr;
   gap: 20px;
+  align-items: start;
+}
+
+.layout-diario > .card {
+  height: auto;
+}
+
+.pagina-diario .cabecalho-pagina {
+  margin-bottom: 12px;
+}
+
+.pagina-diario #status_diario {
+  margin-bottom: 16px;
+}
+
+.pagina-diario .area-reflexao textarea {
+  min-height: 220px;
 }
 
 .historico-lista {
@@ -1251,6 +1406,15 @@ body.pagina-descoberta .selos-descoberta li {
 
   body.pagina-descoberta .selos-descoberta {
     flex-wrap: wrap;
+  }
+
+  #significados_correntes_resultado {
+    grid-template-columns: 1fr;
+  }
+
+  .diario-main {
+    max-width: 100%;
+    padding-top: 18px;
   }
 }
 
