@@ -15,8 +15,16 @@ let chartCarregamentoDashboardConcluido = false;
 let graficoDashboardInicializado = false;
 let metricasDashboardCarregadas = null;
 let progressoPerguntasDashboardCarregado = null;
+let distribuicaoCorrentesPorPerguntaDashboardCarregada = null;
 let graficoCorrentesDashboard = null;
 let graficoProgressoPerguntasDashboard = null;
+const CORES_CORRENTES_DASHBOARD = {
+  Estoicismo: "#d8b46a",
+  Existencialismo: "#9e8a58",
+  Utilitarismo: "#6f6550",
+  Racionalismo: "#4f4a41",
+};
+const ORDEM_CORRENTES_DASHBOARD = ["Estoicismo", "Existencialismo", "Utilitarismo", "Racionalismo"];
 
 // Verifica se a página atual contém os elementos da dashboard.
 function paginaDashboardAtiva() {
@@ -30,6 +38,43 @@ function atualizarStatusDashboard(mensagem) {
   if (statusDashboard) {
     statusDashboard.textContent = mensagem;
   }
+}
+
+// Formata quantidade com singular/plural correto para "resposta/respostas".
+function formatarQuantidadeRespostas(totalRespostas) {
+  const total = Number(totalRespostas) || 0;
+  return total === 1 ? "1 resposta" : `${total} respostas`;
+}
+
+// Ordena as perguntas ativas por ordem de exibição para manter sequência P1 -> P5.
+function ordenarProgressoPerguntas(progressoPorPergunta) {
+  if (!Array.isArray(progressoPorPergunta)) {
+    return [];
+  }
+
+  return progressoPorPergunta.slice().sort(function (a, b) {
+    const ordemA = Number(a && a.ordemExibicao) || 0;
+    const ordemB = Number(b && b.ordemExibicao) || 0;
+    return ordemA - ordemB;
+  });
+}
+
+// Normaliza nome de corrente para evitar divergência por maiúsculas, acentos e espaços.
+function normalizarCorrenteDashboard(corrente) {
+  const textoCorrente = String(corrente || "")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  const mapaCorrentes = {
+    estoicismo: "Estoicismo",
+    existencialismo: "Existencialismo",
+    utilitarismo: "Utilitarismo",
+    racionalismo: "Racionalismo",
+  };
+
+  return mapaCorrentes[textoCorrente] || "";
 }
 
 /*
@@ -53,7 +98,7 @@ function atualizarResumoDashboard(totalTexto, participantesTexto, concluintesTex
   concluintes.textContent = concluintesTexto;
   lider.textContent = correnteTexto;
   aviso.textContent = avisoAmostra || "";
-  resumo.style.display = exibir ? "block" : "none";
+  resumo.style.display = exibir ? "grid" : "none";
 }
 
 // Renderiza lista textual da distribuição por corrente filosófica.
@@ -73,7 +118,7 @@ function renderizarMetricasTextuaisDashboard(distribuicaoPorCorrente, exibir) {
 
   distribuicaoPorCorrente.forEach(function (metrica) {
     const item = document.createElement("li");
-    item.textContent = `${metrica.correnteFilosofica}: ${Number(metrica.totalRespostas)} resposta(s)`;
+    item.textContent = `${metrica.correnteFilosofica}: ${formatarQuantidadeRespostas(metrica.totalRespostas)}`;
     listaMetricas.appendChild(item);
   });
 }
@@ -93,11 +138,16 @@ function renderizarProgressoPerguntasTextualDashboard(progressoPorPergunta, exib
     return;
   }
 
-  progressoPorPergunta.forEach(function (itemPergunta) {
+  const progressoOrdenado = ordenarProgressoPerguntas(progressoPorPergunta);
+
+  progressoOrdenado.forEach(function (itemPergunta) {
     const item = document.createElement("li");
-    item.textContent = `Pergunta ${Number(itemPergunta.ordemExibicao)} (${itemPergunta.enunciado}): ${Number(
+    const ordemPergunta = Number(itemPergunta.ordemExibicao);
+    const identificadorPergunta = Number.isFinite(ordemPergunta) && ordemPergunta > 0 ? `P${ordemPergunta}` : "Pergunta";
+    const enunciadoPergunta = itemPergunta.enunciado || "Enunciado indisponível";
+    item.textContent = `${identificadorPergunta} — ${enunciadoPergunta}: ${formatarQuantidadeRespostas(
       itemPergunta.totalRespostas
-    )} resposta(s)`;
+    )}`;
     listaProgresso.appendChild(item);
   });
 }
@@ -239,15 +289,68 @@ function inicializarGraficoCorrentes(metricas) {
 }
 
 /*
-  Monta gráfico de barras com progresso por pergunta ativa.
-  Entrada: array com total de respostas por pergunta.
+  Monta datasets empilhados por corrente, respeitando ordem das perguntas ativas (P1 até P5).
+  Correntes sem resposta em uma pergunta recebem valor zero para evitar desalinhamento visual.
 */
-function inicializarGraficoProgressoPerguntas(progressoPorPergunta) {
+function montarDatasetsEmpilhadosPorCorrente(progressoPorPergunta, distribuicaoCorrentesPorPergunta) {
+  const totaisPorPerguntaCorrente = {};
+
+  if (Array.isArray(distribuicaoCorrentesPorPergunta)) {
+    distribuicaoCorrentesPorPergunta.forEach(function (item) {
+      const ordemPerguntaBruta =
+        item && item.ordemExibicao !== undefined ? item.ordemExibicao : item && item.ordem_exibicao;
+      const correnteBruta =
+        item && item.correnteFilosofica !== undefined ? item.correnteFilosofica : item && item.corrente_filosofica;
+      const totalRespostasBruto =
+        item && item.totalRespostas !== undefined ? item.totalRespostas : item && item.total_respostas;
+      const ordemPergunta = Number(ordemPerguntaBruta);
+      const corrente = normalizarCorrenteDashboard(correnteBruta);
+      const totalRespostas = Number(totalRespostasBruto) || 0;
+
+      if (!Number.isFinite(ordemPergunta) || ordemPergunta <= 0 || !corrente) {
+        return;
+      }
+
+      const chavePergunta = `P${ordemPergunta}`;
+      if (!totaisPorPerguntaCorrente[chavePergunta]) {
+        totaisPorPerguntaCorrente[chavePergunta] = {};
+      }
+
+      totaisPorPerguntaCorrente[chavePergunta][corrente] =
+        (Number(totaisPorPerguntaCorrente[chavePergunta][corrente]) || 0) + totalRespostas;
+    });
+  }
+
+  return ORDEM_CORRENTES_DASHBOARD.map(function (corrente) {
+    return {
+      label: corrente,
+      data: progressoPorPergunta.map(function (itemPergunta) {
+        const ordemPergunta = Number(itemPergunta.ordemExibicao);
+        const chavePergunta = Number.isFinite(ordemPergunta) && ordemPergunta > 0 ? `P${ordemPergunta}` : "";
+        return Number(totaisPorPerguntaCorrente[chavePergunta]?.[corrente]) || 0;
+      }),
+      backgroundColor: CORES_CORRENTES_DASHBOARD[corrente] || "#2f2f33",
+      borderColor: "#111114",
+      borderWidth: 1,
+      maxBarThickness: 46,
+      categoryPercentage: 0.68,
+      barPercentage: 0.82,
+    };
+  });
+}
+
+/*
+  Monta gráfico de barras empilhadas por pergunta ativa.
+  Entrada: array com progresso por pergunta + distribuição por corrente em cada pergunta.
+*/
+function inicializarGraficoProgressoPerguntas(progressoPorPergunta, distribuicaoCorrentesPorPergunta) {
   const graficoProgresso = document.getElementById("graficoProgressoPerguntas");
 
   if (!window.Chart || !graficoProgresso) {
     return false;
   }
+
+  const progressoOrdenado = ordenarProgressoPerguntas(progressoPorPergunta);
 
   try {
     if (graficoProgressoPerguntasDashboard) {
@@ -257,25 +360,16 @@ function inicializarGraficoProgressoPerguntas(progressoPorPergunta) {
     graficoProgressoPerguntasDashboard = new Chart(graficoProgresso, {
       type: "bar",
       data: {
-        labels: progressoPorPergunta.map(function (itemPergunta) {
+        labels: progressoOrdenado.map(function (itemPergunta) {
           return `P${Number(itemPergunta.ordemExibicao)}`;
         }),
-        datasets: [
-          {
-            label: "Respostas por pergunta",
-            data: progressoPorPergunta.map(function (itemPergunta) {
-              return Number(itemPergunta.totalRespostas);
-            }),
-            backgroundColor: "#d8b46a",
-            borderColor: "#111114",
-            borderWidth: 1,
-          },
-        ],
+        datasets: montarDatasetsEmpilhadosPorCorrente(progressoOrdenado, distribuicaoCorrentesPorPergunta),
       },
       options: {
         maintainAspectRatio: false,
         scales: {
           x: {
+            stacked: true,
             ticks: {
               color: "#e7e3d5",
             },
@@ -284,10 +378,12 @@ function inicializarGraficoProgressoPerguntas(progressoPorPergunta) {
             },
           },
           y: {
+            stacked: true,
             beginAtZero: true,
             ticks: {
               color: "#e7e3d5",
               precision: 0,
+              stepSize: 1,
             },
             grid: {
               color: "rgba(255, 255, 255, 0.08)",
@@ -295,6 +391,15 @@ function inicializarGraficoProgressoPerguntas(progressoPorPergunta) {
           },
         },
         plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (contexto) {
+                const corrente = contexto.dataset?.label || "Corrente";
+                const quantidade = Number(contexto.raw) || 0;
+                return `${corrente}: ${formatarQuantidadeRespostas(quantidade)}`;
+              },
+            },
+          },
           legend: {
             labels: {
               color: "#e7e3d5",
@@ -336,7 +441,10 @@ function tentarInicializarGraficoDashboard() {
   }
 
   const graficoCorrentesCriado = inicializarGraficoCorrentes(metricasDashboardCarregadas);
-  const graficoProgressoCriado = inicializarGraficoProgressoPerguntas(progressoPerguntasDashboardCarregado);
+  const graficoProgressoCriado = inicializarGraficoProgressoPerguntas(
+    progressoPerguntasDashboardCarregado,
+    distribuicaoCorrentesPorPerguntaDashboardCarregada
+  );
 
   if (graficoCorrentesCriado && graficoProgressoCriado) {
     graficoDashboardInicializado = true;
@@ -360,6 +468,7 @@ function carregarMetricasDashboard() {
       if (resposta.status === 401) {
         metricasDashboardCarregadas = null;
         progressoPerguntasDashboardCarregado = null;
+        distribuicaoCorrentesPorPerguntaDashboardCarregada = null;
         renderizarMetricasTextuaisDashboard([], false);
         renderizarProgressoPerguntasTextualDashboard([], false);
         atualizarResumoDashboard(
@@ -381,6 +490,7 @@ function carregarMetricasDashboard() {
           totalConcluintes: 0,
           distribuicaoPorCorrente: [],
           progressoPorPergunta: [],
+          distribuicaoCorrentesPorPergunta: [],
         };
       }
 
@@ -399,6 +509,9 @@ function carregarMetricasDashboard() {
         ? metricas.distribuicaoPorCorrente
         : [];
       const progressoPorPergunta = Array.isArray(metricas.progressoPorPergunta) ? metricas.progressoPorPergunta : [];
+      const distribuicaoCorrentesPorPergunta = Array.isArray(metricas.distribuicaoCorrentesPorPergunta)
+        ? metricas.distribuicaoCorrentesPorPergunta
+        : [];
       const totalRespostas = Number(metricas.totalRespostas) || 0;
       const totalParticipantes = Number(metricas.totalParticipantes) || 0;
       const totalConcluintes = Number(metricas.totalConcluintes) || 0;
@@ -407,6 +520,7 @@ function carregarMetricasDashboard() {
 
       metricasDashboardCarregadas = distribuicaoPorCorrente;
       progressoPerguntasDashboardCarregado = progressoPorPergunta;
+      distribuicaoCorrentesPorPerguntaDashboardCarregada = distribuicaoCorrentesPorPergunta;
 
       atualizarResumoDashboard(
         String(totalRespostas),
@@ -434,6 +548,7 @@ function carregarMetricasDashboard() {
       console.log("Erro ao carregar métricas da dashboard:", erro);
       metricasDashboardCarregadas = null;
       progressoPerguntasDashboardCarregado = null;
+      distribuicaoCorrentesPorPerguntaDashboardCarregada = null;
       renderizarMetricasTextuaisDashboard([], false);
       renderizarProgressoPerguntasTextualDashboard([], false);
 

@@ -17,6 +17,7 @@ async function buscarMetricas(req, res) {
       dashboardModel.buscarTotalParticipantesAtivos(),
       dashboardModel.buscarTotalParticipantesConcluintes(),
       dashboardModel.buscarProgressoRespostasPorPerguntaAtiva(),
+      dashboardModel.buscarDistribuicaoCorrentesPorPerguntaAtiva(),
     ]);
 
     // Normaliza os dados para números e arrays.
@@ -25,6 +26,7 @@ async function buscarMetricas(req, res) {
     const totalParticipantes = Number(resultados[2]?.[0]?.totalParticipantes) || 0;
     const totalConcluintes = Number(resultados[3]?.[0]?.totalConcluintes) || 0;
     const progressoPorPergunta = resultados[4] || [];
+    const distribuicaoCorrentesPorPergunta = resultados[5] || [];
 
     // Retorna payload pronto para renderização no front-end.
     return res.status(200).json({
@@ -33,6 +35,7 @@ async function buscarMetricas(req, res) {
       totalConcluintes: totalConcluintes,
       progressoPorPergunta: progressoPorPergunta,
       distribuicaoPorCorrente: distribuicaoPorCorrente,
+      distribuicaoCorrentesPorPergunta: distribuicaoCorrentesPorPergunta,
     });
   } catch (erro) {
     // Em erro de banco/consulta, devolve mensagem didática para o cliente.

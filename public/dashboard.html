@@ -8,21 +8,23 @@
   <link rel="stylesheet" href="./css/global.css">
 </head>
 
-<body>
-  <aside class="menu-lateral">
-    <h1>Painel Filosófico</h1>
-    <nav>
+<body class="pagina-com-navbar pagina-dashboard">
+  <header class="barra-navegacao">
+    <a class="marca-navegacao" href="index.html">PROJETO FILOSOFIA</a>
+    <nav class="links-navegacao">
       <a href="index.html"><img class="icone-nav" src="./assets/imgs/icone-inicio.svg" alt="">Início</a>
       <a href="descoberta.html"><img class="icone-nav" src="./assets/imgs/icone-descoberta.svg" alt="">Descoberta</a>
-      <a href="diario.html"><img class="icone-nav" src="./assets/imgs/icone-diario.svg" alt="">Diário</a>
       <a href="resultado.html"><img class="icone-nav" src="./assets/imgs/icone-resultado.svg" alt="">Resultado</a>
+      <a href="diario.html"><img class="icone-nav" src="./assets/imgs/icone-diario.svg" alt="">Diário</a>
       <a class="ativo" href="dashboard.html"><img class="icone-nav" src="./assets/imgs/icone-dashboard.svg" alt="">Dashboard</a>
-      <a href="login.html"><img class="icone-nav" src="./assets/imgs/icone-login.svg" alt="">Entrar</a>
-      <a href="login.html" class="acao-sair"><img class="icone-nav" src="./assets/imgs/icone-sair.svg" alt="">Sair</a>
     </nav>
-  </aside>
+    <div class="area-conta-nav">
+      <a href="login.html" class="acao-entrar-nav"><img class="icone-nav" src="./assets/imgs/icone-login.svg" alt="">Entrar</a>
+      <a href="login.html" class="acao-sair"><img class="icone-nav" src="./assets/imgs/icone-sair.svg" alt="">Sair</a>
+    </div>
+  </header>
 
-  <main class="conteudo">
+  <main class="dashboard-main">
     <section class="cabecalho-pagina reveal">
       <h2 class="titulo">Dashboard</h2>
       <p class="frase-destaque">Visão coletiva das respostas, preservando a proposta educativa do projeto.</p>
@@ -32,40 +34,49 @@
         <li><img src="./assets/imgs/icone-maos.svg" alt="Ícone de jornada">Jornada em grupo</li>
       </ul>
     </section>
-    <p class="subtitulo">Métricas reais das respostas registradas no conjunto de perguntas ativas do questionário.</p>
     <p class="subtitulo" id="status_dashboard">Carregando respostas registradas...</p>
 
-    <section class="painel">
-      <article class="card reveal">
-        <h2>Métricas agregadas do questionário ativo</h2>
-        <section id="resumo_metricas_dashboard" class="resumo-metricas-dashboard" style="display: none;">
-          <p><strong>Total de respostas:</strong> <span id="total_respostas_dashboard"></span></p>
-          <p><strong>Total de participantes:</strong> <span id="total_participantes_dashboard"></span></p>
-          <p><strong>Total de concluintes:</strong> <span id="total_concluintes_dashboard"></span></p>
-          <p><strong>Corrente com mais respostas:</strong> <span id="corrente_lider_dashboard"></span></p>
-          <p id="aviso_amostra_dashboard" class="aviso-amostra-dashboard"></p>
-          <p class="subtitulo">Total de respostas: soma de respostas registradas nas perguntas ativas.</p>
-          <p class="subtitulo">Participante: usuário com ao menos uma resposta em perguntas ativas.</p>
-          <p class="subtitulo">Concluinte: participante que respondeu todas as perguntas ativas.</p>
-        </section>
-        <div class="grafico-container">
+    <section id="resumo_metricas_dashboard" class="resumo-metricas-dashboard" style="display: none;">
+      <article class="card card-kpi-dashboard">
+        <p class="rotulo-kpi-dashboard">Total de Respostas</p>
+        <p id="total_respostas_dashboard" class="valor-kpi-dashboard"></p>
+      </article>
+      <article class="card card-kpi-dashboard">
+        <p class="rotulo-kpi-dashboard">Participantes</p>
+        <p id="total_participantes_dashboard" class="valor-kpi-dashboard"></p>
+      </article>
+      <article class="card card-kpi-dashboard">
+        <p class="rotulo-kpi-dashboard">Concluintes</p>
+        <p id="total_concluintes_dashboard" class="valor-kpi-dashboard"></p>
+      </article>
+      <article class="card card-kpi-dashboard">
+        <p class="rotulo-kpi-dashboard">Corrente Líder</p>
+        <p id="corrente_lider_dashboard" class="valor-kpi-dashboard"></p>
+      </article>
+    </section>
+
+    <section class="painel-dashboard">
+      <article class="card reveal painel-grafico-dashboard">
+        <h2>Distribuição por corrente</h2>
+        <div class="grafico-container grafico-container-padrao">
           <canvas id="graficoTemas"></canvas>
         </div>
-        <h3 class="subtitulo">Distribuição textual por corrente</h3>
         <ul id="metricas_textuais" class="metricas-textuais" style="display: none;"></ul>
       </article>
 
-      <article class="card reveal">
-        <h2>Progresso de respostas por pergunta ativa</h2>
-        <p class="subtitulo">Cada linha indica quantas respostas foram registradas em cada pergunta, inclusive quando ainda é zero.</p>
-        <div class="grafico-container">
+      <article class="card reveal painel-grafico-dashboard">
+        <h2>Correntes por pergunta</h2>
+        <p class="subtitulo subtitulo-grafico-dashboard">Distribuição das escolhas filosóficas em cada dilema ativo (P1 a P5).</p>
+        <div class="grafico-container grafico-container-padrao">
           <canvas id="graficoProgressoPerguntas"></canvas>
         </div>
         <ul id="progresso_perguntas_textual" class="metricas-textuais" style="display: none;"></ul>
       </article>
     </section>
+
+    <p id="aviso_amostra_dashboard" class="aviso-amostra-dashboard"></p>
   </main>
-  <footer class="rodape-projeto rodape-projeto-com-menu">
+  <footer class="rodape-projeto">
     <p>Filosofia, reflexão e autoconhecimento em diálogo com os Objetivos de Desenvolvimento Sustentável. Com foco principal na ODS 3 e contribuição complementar da ODS 4.</p>
     <nav class="rodape-ods-nav" aria-label="Links ODS da ONU Brasil">
       <a class="rodape-ods-link" href="https://brasil.un.org/pt-br/sdgs/3" target="_blank" rel="noopener noreferrer">ODS 3 · Saúde e bem-estar</a>

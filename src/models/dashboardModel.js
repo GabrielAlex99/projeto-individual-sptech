@@ -106,10 +106,39 @@ function buscarProgressoRespostasPorPerguntaAtiva() {
     return database.executar(instrucaoSql);
 }
 
+function buscarDistribuicaoCorrentesPorPerguntaAtiva() {
+    console.log("ACESSEI O DASHBOARD MODEL \n\n function buscarDistribuicaoCorrentesPorPerguntaAtiva()");
+
+    // Query de banco para contar escolhas por pergunta ativa e por corrente filosófica (matriz fixa com 4 correntes).
+    const instrucaoSql = `
+        SELECT
+            p.id AS idPergunta,
+            p.ordem_exibicao AS ordemExibicao,
+            c.correnteFilosofica,
+            COALESCE(SUM(CASE WHEN a.corrente_filosofica = c.correnteFilosofica THEN 1 ELSE 0 END), 0) AS totalRespostas
+        FROM pergunta_filosofica p
+        CROSS JOIN (
+            SELECT 'Estoicismo' AS correnteFilosofica
+            UNION ALL SELECT 'Existencialismo'
+            UNION ALL SELECT 'Utilitarismo'
+            UNION ALL SELECT 'Racionalismo'
+        ) c
+        LEFT JOIN resposta_filosofica r ON r.fk_pergunta = p.id
+        LEFT JOIN alternativa_filosofica a ON a.id = r.fk_alternativa
+        WHERE p.ativo = 1
+        GROUP BY p.id, p.ordem_exibicao, c.correnteFilosofica
+        ORDER BY p.ordem_exibicao ASC, p.id ASC, c.correnteFilosofica ASC;
+    `;
+
+    console.log("Executando a instrução SQL: \n" + instrucaoSql);
+    return database.executar(instrucaoSql);
+}
+
 module.exports = {
     buscarRespostasPorCorrente,
     buscarTotalRespostasAtivas,
     buscarTotalParticipantesAtivos,
     buscarTotalParticipantesConcluintes,
-    buscarProgressoRespostasPorPerguntaAtiva
+    buscarProgressoRespostasPorPerguntaAtiva,
+    buscarDistribuicaoCorrentesPorPerguntaAtiva
 };
